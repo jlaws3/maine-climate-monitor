@@ -1,5 +1,466 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maine Climate Monitor</title><link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet"><link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"><style>
-*{box-sizing:border-box}body{font-family:Barlow,Arial,sans-serif;color:#191919;background:white;margin:0}.wrap{max-width:1200px;margin:auto;padding:24px}h1{font-weight:600;margin:5px 0 10px;font-size:clamp(28px,4vw,42px)}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666}.muted{color:#666}.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:18px;margin-top:20px}#map{height:650px;border-radius:12px;background:#eef2f4}.panel{border:1px solid #ddd;border-radius:12px;padding:20px}.stat{font-size:40px;font-weight:600;margin:8px 0}.small{font-size:13px}.legend{display:flex;gap:5px;align-items:center;margin:12px 0}.ramp{height:13px;flex:1;border-radius:10px;background:linear-gradient(90deg,#245c9a,#79b5d4,#f4f4f4,#edab87,#ad3029)}button,select{font:inherit;border:1px solid #bbb;background:white;border-radius:8px;padding:9px;cursor:pointer}button:hover{background:#eee}select{width:100%}.detail{margin-top:20px}.detail div{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}#status{font-size:13px;margin-top:8px}.footer{font-size:12px;color:#666;margin-top:20px;line-height:1.6}@media(max-width:760px){.layout{grid-template-columns:1fr}#map{height:480px}.wrap{padding:14px}}
-</style></head><body><main class="wrap"><div class="eyebrow">Maine Climate Monitor / Version 1</div><h1>How unusual is Maine's temperature?</h1><div class="muted">Daily mean temperature departure from the 1961–1990 historical baseline</div><div class="layout"><section><div id="map" aria-label="Interactive Maine temperature anomaly map"></div><div class="legend"><span class="small">−15°F</span><div class="ramp"></div><span class="small">+15°F</span></div><div class="small muted">Grid squares represent ERA5-Land model samples, not individual station readings.</div><div id="status" role="status">Loading map and climate data…</div></section><aside class="panel"><div class="eyebrow">Explore Maine</div><h2 id="area">Maine</h2><label for="county" class="small">Select a county</label><select id="county"><option value="">All counties</option></select><div class="detail"><div><span>Date</span><strong id="date">—</strong></div><div><span>Mean temperature</span><strong id="temp">—</strong></div><div><span>Historical normal</span><strong id="normal">—</strong></div></div><div class="muted" style="margin-top:24px">Departure from normal</div><div class="stat" id="anomaly">—</div><p class="small muted" id="description">Choose a county or click its outline.</p><button id="reset" type="button">Reset map</button></aside></div><p class="footer">Source: ERA5-Land reanalysis via Open-Meteo; Maine county boundaries from Maine GIS. Baseline: 1961–1990, 31-day window. County summaries are approximate equal-weight averages of land grid samples. Data files are produced separately and are not live API results. OpenStreetMap contributors / CARTO basemap.</p></main><script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script><script>
-(async()=>{const status=document.getElementById('status');try{const [geo,climate]=await Promise.all(['counties.geojson','climate.json'].map(x=>fetch(x).then(r=>{if(!r.ok)throw Error(x+' HTTP '+r.status);return r.json()})));const names=geo.features.map(f=>f.properties.name).sort();const select=document.getElementById('county');names.forEach(n=>select.add(new Option(n,n)));const map=new maplibregl.Map({container:'map',style:{version:8,sources:{basemap:{type:'raster',tiles:['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors © CARTO'}},layers:[{id:'basemap',type:'raster',source:'basemap'}]},center:[-69.1,45.3],zoom:5.5});map.addControl(new maplibregl.NavigationControl(),'top-right');const half=climate.step_degrees/2;const grid={type:'FeatureCollection',features:climate.grid.map(p=>({type:'Feature',properties:p,geometry:{type:'Polygon',coordinates:[[[p.lon-half,p.lat-half],[p.lon+half,p.lat-half],[p.lon+half,p.lat+half],[p.lon-half,p.lat+half],[p.lon-half,p.lat-half]]]}}))};const color=['interpolate',['linear'],['get','anomaly_f'],-15,'#245c9a',-7,'#79b5d4',0,'#f4f4f4',7,'#edab87',15,'#ad3029'];map.on('load',()=>{map.addSource('grid',{type:'geojson',data:grid});map.addLayer({id:'anomaly',type:'fill',source:'grid',paint:{'fill-color':color,'fill-opacity':.78}});map.addSource('counties',{type:'geojson',data:geo,promoteId:'name'});map.addLayer({id:'county-fill',type:'fill',source:'counties',paint:{'fill-color':'#ffffff','fill-opacity':0}});map.addLayer({id:'county-line',type:'line',source:'counties',paint:{'line-color':'#262626','line-width':1.2}});map.addLayer({id:'selected',type:'line',source:'counties',filter:['==',['get','name'],'__none__'],paint:{'line-color':'#000','line-width':3.5}});map.on('click','county-fill',e=>{if(e.features.length)choose(e.features[0].properties.name)});map.on('mouseenter','county-fill',()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave','county-fill',()=>map.getCanvas().style.cursor='');status.textContent=`Loaded ${climate.grid.length} model samples for ${climate.date}.`});const average=keys=>Object.fromEntries(keys.map(k=>[k,climate.grid.reduce((sum,p)=>sum+p[k],0)/climate.grid.length]));function choose(name){select.value=name||'';document.getElementById('area').textContent=name||'Maine';document.getElementById('date').textContent=climate.date;const p=name?climate.counties[name]:average(['temperature_f','normal_f','anomaly_f']);const fmt=v=>Number.isFinite(v)?v.toFixed(1)+'°F':'—';document.getElementById('temp').textContent=p?fmt(p.temperature_f):'—';document.getElementById('normal').textContent=p?fmt(p.normal_f):'—';document.getElementById('anomaly').textContent=p?(p.anomaly_f>0?'+':'')+fmt(p.anomaly_f):'—';document.getElementById('description').textContent=name?'Approximate average of land grid samples in '+name+' County.':'Approximate average of all Maine land grid samples.';if(map.getLayer('selected'))map.setFilter('selected',['==',['get','name'],name||'__none__']);}select.addEventListener('change',()=>choose(select.value));document.getElementById('reset').addEventListener('click',()=>{choose('');map.flyTo({center:[-69.1,45.3],zoom:5.5})});choose('');}catch(e){status.textContent='Unable to load data: '+e.message;console.error(e)}})();
-</script></body></html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Maine Climate Monitor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.css" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fff;
+  color: #151515;
+  font-family: 'Barlow', Arial, sans-serif;
+}
+
+.shell {
+  max-width: 1320px;
+  margin: auto;
+  padding: 26px 20px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+}
+
+h1 {
+  font-size: clamp(27px, 4vw, 43px);
+  font-weight: 600;
+  margin: 5px 0 8px;
+}
+
+.intro {
+  color: #555;
+  margin: 0 0 20px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 18px;
+}
+
+.map-wrap {
+  position: relative;
+  min-height: 620px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+.side {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  align-self: start;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+select {
+  font: inherit;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  background: white;
+}
+
+.county-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin: 22px 0 8px;
+}
+
+.detail {
+  line-height: 1.5;
+  color: #555;
+}
+
+.status {
+  font-size: 13px;
+  color: #555;
+  margin-top: 14px;
+}
+
+.note {
+  font-size: 13px;
+  color: #666;
+  margin-top: 18px;
+  line-height: 1.5;
+}
+
+.reset {
+  border: 1px solid #222;
+  background: white;
+  border-radius: 8px;
+  font: inherit;
+  padding: 10px 14px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.reset:hover {
+  background: #f2f2f2;
+}
+
+.maplibregl-popup-content {
+  font-family: Barlow, Arial, sans-serif;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .map-wrap {
+    min-height: 520px;
+  }
+
+  .side {
+    order: -1;
+  }
+
+  .shell {
+    padding: 20px 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="shell">
+
+  <div class="eyebrow">
+    Maine Climate Monitor · Version 1.1
+  </div>
+
+  <h1>Explore Maine's counties</h1>
+
+  <p class="intro">
+    Select a county on the map or from the menu.
+    Climate measurements will be added in the next stage.
+  </p>
+
+  <div class="layout">
+
+    <section class="map-wrap"
+      aria-label="Interactive map of Maine counties">
+      <div id="map"></div>
+    </section>
+
+    <aside class="side">
+
+      <label for="county">Select county</label>
+
+      <select id="county">
+        <option value="">All Maine counties</option>
+      </select>
+
+      <h2 class="county-title" id="county-title">
+        Maine
+      </h2>
+
+      <p class="detail" id="detail">
+        Click any county to highlight it and zoom in.
+      </p>
+
+      <button class="reset" id="reset" type="button">
+        Reset map
+      </button>
+
+      <p class="status" id="status" role="status">
+        Loading county boundaries…
+      </p>
+
+      <p class="note">
+        <strong>Data status:</strong>
+        Geographic boundaries only. No temperature or
+        climate values are displayed yet.
+      </p>
+
+    </aside>
+
+  </div>
+
+  <p class="note">
+    County geography: Plotly's public US counties GeoJSON
+    dataset (Maine FIPS 23). Basemap: OpenFreeMap.
+    For publication, we will replace this prototype
+    geography with authoritative Maine county boundaries.
+  </p>
+
+</main>
+
+<script type="module">
+
+import * as maplibregl from
+  'https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
+
+const countySelect = document.getElementById('county');
+const title = document.getElementById('county-title');
+const detail = document.getElementById('detail');
+const status = document.getElementById('status');
+
+const bounds = [
+  [-71.2, 42.9],
+  [-66.8, 47.5]
+];
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://tiles.openfreemap.org/styles/bright',
+  center: [-69.1, 45.2],
+  zoom: 5.8,
+  attributionControl: true
+});
+
+map.addControl(
+  new maplibregl.NavigationControl({
+    showCompass: false
+  }),
+  'top-right'
+);
+
+let features = [];
+let active = '';
+
+function featureName(f) {
+  return f.properties.NAME ||
+         f.properties.name ||
+         f.properties.NAMELSAD ||
+         f.id ||
+         'County';
+}
+
+function selectCounty(id) {
+
+  active = id;
+  countySelect.value = id;
+
+  map.setFilter('selected-county', [
+    '==',
+    ['get', 'FIPS'],
+    id
+  ]);
+
+  if (!id) {
+    title.textContent = 'Maine';
+    detail.textContent =
+      'Click any county to highlight it and zoom in.';
+
+    map.fitBounds(bounds, {
+      padding: 35,
+      duration: 600
+    });
+
+    return;
+  }
+
+  const f = features.find(
+    x => x.properties.FIPS === id
+  );
+
+  if (!f) return;
+
+  title.textContent = featureName(f) + ' County';
+
+  detail.textContent =
+    'County selected. Temperature anomalies and historical comparisons will appear here in the next release.';
+
+  const coords = [];
+
+  function walk(a) {
+    if (typeof a[0] === 'number') {
+      coords.push(a);
+      return;
+    }
+    a.forEach(walk);
+  }
+
+  walk(f.geometry.coordinates);
+
+  const bb = coords.reduce(
+    (b, p) => [
+      [
+        Math.min(b[0][0], p[0]),
+        Math.min(b[0][1], p[1])
+      ],
+      [
+        Math.max(b[1][0], p[0]),
+        Math.max(b[1][1], p[1])
+      ]
+    ],
+    [
+      [Infinity, Infinity],
+      [-Infinity, -Infinity]
+    ]
+  );
+
+  map.fitBounds(bb, {
+    padding: 65,
+    maxZoom: 9,
+    duration: 600
+  });
+}
+
+countySelect.addEventListener('change', () => {
+  selectCounty(countySelect.value);
+});
+
+document.getElementById('reset')
+  .addEventListener('click', () => {
+    selectCounty('');
+  });
+
+map.on('load', async () => {
+
+  try {
+
+    const response = await fetch(
+      'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+    );
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const us = await response.json();
+
+    features = us.features
+      .filter(f => String(f.id || '').startsWith('23'))
+      .map(f => ({
+        ...f,
+        properties: {
+          ...f.properties,
+          FIPS: String(f.id)
+        }
+      }));
+
+    if (features.length !== 16) {
+      throw new Error(
+        'Expected 16 Maine counties; found ' +
+        features.length
+      );
+    }
+
+    const data = {
+      type: 'FeatureCollection',
+      features
+    };
+
+    map.addSource('counties', {
+      type: 'geojson',
+      data
+    });
+
+    map.addLayer({
+      id: 'county-fill',
+      type: 'fill',
+      source: 'counties',
+      paint: {
+        'fill-color': '#397d94',
+        'fill-opacity': 0.12
+      }
+    });
+
+    map.addLayer({
+      id: 'selected-county',
+      type: 'fill',
+      source: 'counties',
+      filter: [
+        '==',
+        ['get', 'FIPS'],
+        ''
+      ],
+      paint: {
+        'fill-color': '#1f3c71',
+        'fill-opacity': 0.35
+      }
+    });
+
+    map.addLayer({
+      id: 'county-lines',
+      type: 'line',
+      source: 'counties',
+      paint: {
+        'line-color': '#304a5a',
+        'line-width': 1.5
+      }
+    });
+
+    features
+      .sort((a, b) =>
+        featureName(a).localeCompare(featureName(b))
+      )
+      .forEach(f => {
+
+        const option = document.createElement('option');
+
+        option.value = f.properties.FIPS;
+        option.textContent = featureName(f);
+
+        countySelect.appendChild(option);
+      });
+
+    map.on('click', 'county-fill', e => {
+      selectCounty(e.features[0].properties.FIPS);
+    });
+
+    map.on('mouseenter', 'county-fill', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'county-fill', () => {
+      map.getCanvas().style.cursor = '';
+    });
+
+    map.fitBounds(bounds, {
+      padding: 35,
+      duration: 0
+    });
+
+    status.textContent =
+      'Loaded all 16 Maine counties.';
+
+  } catch (err) {
+
+    status.textContent =
+      'Could not load county data: ' +
+      err.message +
+      '. Check your internet connection and reload.';
+
+    console.error(err);
+  }
+
+});
+
+</script>
+
+</body>
+</html>
