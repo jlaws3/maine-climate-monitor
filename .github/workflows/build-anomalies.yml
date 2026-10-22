@@ -128,9 +128,9 @@ jobs:
           print("Both downloads completed.", flush=True)
           PY
 
-           - name: Calculate anomalies
-             run: |
-               python process_climate.py
+      - name: Calculate anomalies
+        run: |
+          python process_climate.py
 
       - name: Validate outputs
         run: |
