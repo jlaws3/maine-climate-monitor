@@ -37,6 +37,6 @@ jobs:
           git add data/drought.geojson data/drought-summary.json data/drought-history/
           if ! git diff --cached --quiet; then
             git commit -m 'Update Maine drought monitor data'
-            git pull --rebase origin main
-            git push origin HEAD:main
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
