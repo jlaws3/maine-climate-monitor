@@ -3,8 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maine Climate Monitor</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +15,7 @@
 body {
   margin: 0;
   background: #fff;
-  color: #151515;
+  color: #171717;
   font-family: Barlow, Arial, sans-serif;
 }
 
@@ -29,28 +28,28 @@ button, select, input { font: inherit; }
 }
 
 .eyebrow {
-  text-transform: uppercase;
-  letter-spacing: .12em;
   font-size: 12px;
   font-weight: 700;
-  color: #555;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #666;
 }
 
 h1 {
-  font-size: clamp(27px, 4vw, 43px);
+  font-size: clamp(28px, 4vw, 43px);
   font-weight: 600;
   margin: 5px 0 8px;
 }
 
 .intro {
-  color: #555;
   margin: 0 0 20px;
+  color: #555;
   line-height: 1.5;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 285px;
+  grid-template-columns: minmax(0,1fr) 285px;
   gap: 18px;
 }
 
@@ -60,7 +59,7 @@ h1 {
   border: 1px solid #ddd;
   border-radius: 12px;
   overflow: hidden;
-  background: #f5f6f5;
+  background: #f8fafb;
 }
 
 #map {
@@ -70,33 +69,32 @@ h1 {
 
 .map-controls {
   position: absolute;
-  z-index: 2;
   top: 14px;
   left: 14px;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
-.map-control {
+.control {
   background: rgba(255,255,255,.97);
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 10px 12px;
-  box-shadow: 0 1px 5px rgba(0,0,0,.07);
+  box-shadow: 0 1px 5px #00000010;
 }
 
-.map-control label {
+.control label {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin: 0;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.map-control input {
+.control input {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -105,51 +103,51 @@ h1 {
 
 .legend {
   position: absolute;
-  z-index: 2;
-  bottom: 16px;
   left: 16px;
-  width: min(370px, calc(100% - 32px));
-  padding: 13px 15px;
+  bottom: 16px;
+  z-index: 2;
+  width: min(380px,calc(100% - 32px));
   background: rgba(255,255,255,.97);
   border: 1px solid #ddd;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px #00000012;
 }
 
 .legend-title {
   font-size: 13px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
 }
 
 .legend-bar {
-  height: 13px;
+  height: 14px;
   border-radius: 4px;
   background: linear-gradient(
     to right,
-    #214e9b 0%,
+    #214e9b,
     #4687c4 20%,
     #a9d2e7 35%,
     #f1f1ed 50%,
     #f5bd88 65%,
     #d66b51 80%,
-    #9d2839 100%
+    #9d2839
   );
 }
 
 .legend-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
+  margin-top: 6px;
   font-size: 12px;
   color: #444;
 }
 
 .legend-caption {
-  margin-top: 8px;
   font-size: 11px;
-  color: #666;
   line-height: 1.4;
+  color: #666;
+  margin-top: 8px;
 }
 
 .side {
@@ -160,17 +158,17 @@ h1 {
 }
 
 .field-label {
-  font-weight: 600;
   display: block;
+  font-weight: 600;
   margin-bottom: 8px;
 }
 
 select {
   width: 100%;
   padding: 11px;
+  background: #fff;
   border: 1px solid #aaa;
   border-radius: 8px;
-  background: white;
 }
 
 .county-title {
@@ -180,8 +178,8 @@ select {
 }
 
 .detail {
-  line-height: 1.5;
   color: #555;
+  line-height: 1.5;
 }
 
 .metric {
@@ -192,15 +190,14 @@ select {
 
 .metric-label {
   font-size: 13px;
-  color: #555;
   font-weight: 600;
+  color: #555;
 }
 
 .metric-value {
   font-size: 32px;
   font-weight: 600;
-  line-height: 1.25;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .metric-value.positive { color: #b64b37; }
@@ -209,7 +206,7 @@ select {
 .metric-sub {
   font-size: 12px;
   color: #666;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .metric-row {
@@ -228,23 +225,9 @@ select {
 .small-metric .metric-label { font-size: 12px; }
 .small-metric .metric-value { font-size: 22px; }
 
-.status {
-  font-size: 13px;
-  color: #555;
-  margin-top: 14px;
-  line-height: 1.45;
-}
-
-.note {
-  font-size: 13px;
-  color: #666;
-  margin-top: 18px;
-  line-height: 1.5;
-}
-
 .reset {
+  background: #fff;
   border: 1px solid #222;
-  background: white;
   border-radius: 8px;
   padding: 10px 14px;
   cursor: pointer;
@@ -252,6 +235,13 @@ select {
 }
 
 .reset:hover { background: #f2f2f2; }
+
+.status, .note {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-top: 18px;
+}
 
 .maplibregl-popup-content {
   font-family: Barlow, Arial, sans-serif;
@@ -261,7 +251,7 @@ select {
 
 @media (max-width: 760px) {
   .layout { grid-template-columns: 1fr; }
-  .map-wrap { min-height: 520px; }
+  .map-wrap { min-height: 530px; }
   .side { order: -1; }
   .shell { padding: 20px 12px; }
   .map-controls { top: 10px; left: 10px; }
@@ -270,48 +260,47 @@ select {
 </head>
 
 <body>
-
 <main class="shell">
 
-  <div class="eyebrow">
-    Maine Climate Monitor · Version 1.5
-  </div>
+  <div class="eyebrow">Maine Climate Monitor · Version 1.6</div>
 
   <h1>Maine temperature anomalies</h1>
 
   <p class="intro">
-    Explore how daily mean temperatures on October 15, 2025
-    compared with the same calendar day during 1961–1990.
-    Select a county to examine local estimates.
+    How did temperatures on October 15, 2025 compare with
+    the same calendar day during 1961–1990?
+    Explore Maine's temperature patterns and select a county.
   </p>
 
   <div class="layout">
 
-    <section class="map-wrap"
-      aria-label="Interactive Maine temperature anomaly map">
-
+    <section class="map-wrap" aria-label="Interactive Maine climate map">
       <div id="map"></div>
 
       <div class="map-controls">
-
-        <div class="map-control">
-          <label for="show-anomalies">
+        <div class="control">
+          <label>
             <input type="checkbox" id="show-anomalies" checked>
             Temperature anomalies
           </label>
         </div>
 
-        <div class="map-control">
-          <label for="show-grid">
+        <div class="control">
+          <label>
             <input type="checkbox" id="show-grid">
             Show grid cells
           </label>
         </div>
 
+        <div class="control">
+          <label>
+            <input type="checkbox" id="show-basemap">
+            Show basemap
+          </label>
+        </div>
       </div>
 
       <div class="legend" id="legend">
-
         <div class="legend-title">
           Temperature difference from historical average
         </div>
@@ -327,27 +316,21 @@ select {
         </div>
 
         <div class="legend-caption">
-          Blue = cooler than average. Red = warmer than average.
-          The surface is visually smoothed from ERA5-Land grid values.
+          Blue is cooler than average; red is warmer.
+          Colors are interpolated between ERA5-Land grid values.
         </div>
-
       </div>
-
     </section>
 
     <aside class="side">
 
-      <label class="field-label" for="county">
-        Select county
-      </label>
+      <label class="field-label" for="county">Select county</label>
 
       <select id="county">
         <option value="">All Maine counties</option>
       </select>
 
-      <h2 class="county-title" id="county-title">
-        Maine
-      </h2>
+      <h2 class="county-title" id="county-title">Maine</h2>
 
       <p class="detail" id="detail">
         Loading temperature data…
@@ -356,23 +339,14 @@ select {
       <div id="metrics" hidden>
 
         <div class="metric">
-
-          <div class="metric-label">
-            Temperature anomaly
-          </div>
-
-          <div class="metric-value" id="anomaly-value">
-            —
-          </div>
-
+          <div class="metric-label">Temperature anomaly</div>
+          <div class="metric-value" id="anomaly-value">—</div>
           <div class="metric-sub">
             October 15, 2025 vs. 1961–1990 average
           </div>
-
         </div>
 
         <div class="metric-row">
-
           <div class="small-metric">
             <div class="metric-label">Daily mean</div>
             <div class="metric-value" id="temperature-value">—</div>
@@ -382,11 +356,9 @@ select {
             <div class="metric-label">Historical mean</div>
             <div class="metric-value" id="normal-value">—</div>
           </div>
-
         </div>
 
         <p class="note" id="metric-note"></p>
-
       </div>
 
       <button class="reset" id="reset" type="button">
@@ -394,36 +366,34 @@ select {
       </button>
 
       <p class="status" id="status" role="status">
-        Loading climate data…
+        Loading map…
       </p>
 
       <p class="note">
-        <strong>Source:</strong> Copernicus ERA5-Land.
-        Daily mean 2-meter air temperature.
-        Historical baseline: 1961–1990.
+        <strong>Source:</strong> Copernicus ERA5-Land
+        daily mean 2-meter air temperature.
+        Baseline: 1961–1990.
       </p>
 
     </aside>
-
   </div>
 
   <p class="note">
     <strong>Methodology:</strong>
-    October 15, 2025 temperature minus the average of
-    October 15 temperatures from 1961 through 1990.
-    The displayed color surface is visually smoothed;
-    no additional climate measurements are inferred.
-    County and statewide summaries use unweighted
-    grid-center values, not area-weighted means.
-    ERA5-Land is reanalysis data.
-    County geography: Plotly public US county GeoJSON.
-    Basemap: OpenFreeMap. Prototype visualization.
+    October 15, 2025 temperature minus the 1961–1990
+    mean for October 15. Map colors use inverse-distance
+    interpolation of nearby ERA5-Land grid-cell estimates.
+    This creates a continuous visual surface, not new observations.
+    County and statewide statistics remain unweighted
+    grid-center estimates, not area-weighted averages.
+    Geography: Plotly US county boundaries.
+    Optional basemap: OpenFreeMap.
+    Prototype visualization.
   </p>
 
 </main>
 
 <script type="module">
-
 import * as maplibregl from
   'https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
 
@@ -438,345 +408,394 @@ const anomalyValue = $('anomaly-value');
 const temperatureValue = $('temperature-value');
 const normalValue = $('normal-value');
 const metricNote = $('metric-note');
+
 const showAnomalies = $('show-anomalies');
 const showGrid = $('show-grid');
+const showBasemap = $('show-basemap');
 const legend = $('legend');
 
-const bounds = [
-  [-71.2, 42.9],
-  [-66.8, 47.5]
-];
+const bounds = [[-71.2,42.9],[-66.8,47.5]];
 
 const map = new maplibregl.Map({
   container: 'map',
   style: 'https://tiles.openfreemap.org/styles/bright',
-  center: [-69.1, 45.2],
-  zoom: 5.8,
-  attributionControl: true
+  center: [-69.1,45.2],
+  zoom: 5.8
 });
 
 map.addControl(
-  new maplibregl.NavigationControl({
-    showCompass: false
-  }),
+  new maplibregl.NavigationControl({showCompass:false}),
   'top-right'
 );
 
 let features = [];
-let active = '';
-let climateSummary = null;
 let climateGrid = null;
-let climateReady = false;
+let climateSummary = null;
+let active = '';
+let ready = false;
 
-/* ------------------------------------
-   TEMPERATURE COLOR SCALE
------------------------------------- */
+/* COLOR SCALE */
 
 const stops = [
-  [-15, [33, 78, 155]],
-  [-9,  [70, 135, 196]],
-  [-4.5,[169, 210, 231]],
-  [0,   [241, 241, 237]],
-  [4.5, [245, 189, 136]],
-  [9,   [214, 107, 81]],
-  [15,  [157, 40, 57]]
+  [-15,[33,78,155]],
+  [-9,[70,135,196]],
+  [-4.5,[169,210,231]],
+  [0,[241,241,237]],
+  [4.5,[245,189,136]],
+  [9,[214,107,81]],
+  [15,[157,40,57]]
 ];
 
-function colorFor(value) {
+function rgbFor(value) {
+  if (value <= stops[0][0]) return stops[0][1];
 
-  if (value <= stops[0][0]) {
-    return `rgb(${stops[0][1].join(',')})`;
-  }
+  for (let i=1; i<stops.length; i++) {
+    const [hi, hc] = stops[i];
+    const [lo, lc] = stops[i-1];
 
-  for (let i = 1; i < stops.length; i++) {
-
-    const [highValue, highColor] = stops[i];
-    const [lowValue, lowColor] = stops[i - 1];
-
-    if (value <= highValue) {
-
-      const t = (value - lowValue) /
-                (highValue - lowValue);
-
-      const rgb = lowColor.map((c, j) =>
-        Math.round(c + t * (highColor[j] - c))
+    if (value <= hi) {
+      const t = (value-lo)/(hi-lo);
+      return lc.map((c,j) =>
+        Math.round(c+t*(hc[j]-c))
       );
-
-      return `rgb(${rgb.join(',')})`;
     }
   }
 
-  return `rgb(${stops[stops.length - 1][1].join(',')})`;
+  return stops[stops.length-1][1];
 }
 
-/* ------------------------------------
-   GEOGRAPHIC CANVAS HELPERS
------------------------------------- */
+/* GEOGRAPHY */
 
-function geometryBounds(collection) {
+function walkCoordinates(value, callback) {
+  if (typeof value[0] === 'number') {
+    callback(value);
+  } else {
+    value.forEach(v => walkCoordinates(v,callback));
+  }
+}
 
-  let west = Infinity;
-  let south = Infinity;
-  let east = -Infinity;
-  let north = -Infinity;
+function extentOf(collection) {
+  const b = {
+    west:Infinity, south:Infinity,
+    east:-Infinity, north:-Infinity
+  };
 
-  function walk(value) {
-
-    if (typeof value[0] === 'number') {
-      west = Math.min(west, value[0]);
-      east = Math.max(east, value[0]);
-      south = Math.min(south, value[1]);
-      north = Math.max(north, value[1]);
-      return;
-    }
-
-    value.forEach(walk);
+  for (const f of collection.features) {
+    walkCoordinates(f.geometry.coordinates, ([x,y]) => {
+      b.west = Math.min(b.west,x);
+      b.east = Math.max(b.east,x);
+      b.south = Math.min(b.south,y);
+      b.north = Math.max(b.north,y);
+    });
   }
 
-  collection.features.forEach(f =>
-    walk(f.geometry.coordinates)
-  );
-
-  return { west, south, east, north };
+  return b;
 }
 
 function drawGeometry(ctx, geometry, project) {
-
-  if (!geometry) return;
-
   const polygons = geometry.type === 'Polygon'
     ? [geometry.coordinates]
     : geometry.type === 'MultiPolygon'
-      ? geometry.coordinates
-      : [];
+      ? geometry.coordinates : [];
 
   ctx.beginPath();
 
   for (const polygon of polygons) {
     for (const ring of polygon) {
-
-      ring.forEach((point, index) => {
-        const [x, y] = project(point);
-
-        if (index === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+      ring.forEach((point,i) => {
+        const [x,y] = project(point);
+        if (i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
       });
-
       ctx.closePath();
     }
   }
 }
 
-/* ------------------------------------
-   CREATE SMOOTH TEMPERATURE RASTER
------------------------------------- */
+/* INTERPOLATED SURFACE
 
-function makeSmoothSurface(grid, counties) {
+   We calculate colors from nearby numerical
+   measurements, rather than blurring a map image.
 
-  const extent = geometryBounds(counties);
+   A spatial lookup keeps rendering reasonably fast.
+*/
 
-  // A small margin prevents edge clipping
-  // during the blur operation.
-  const margin = 0.25;
+function makeSurface(grid, counties) {
+  const b = extentOf(counties);
 
-  const west = extent.west - margin;
-  const east = extent.east + margin;
-  const south = extent.south - margin;
-  const north = extent.north + margin;
+  const margin = 0.18;
+  const west = b.west-margin;
+  const east = b.east+margin;
+  const south = b.south-margin;
+  const north = b.north+margin;
 
-  const width = 1100;
-  const height = 1250;
+  // Render a modest-resolution numerical raster.
+  // The browser smoothly scales it on the map.
+  const width = 440;
+  const height = Math.round(
+    width*(north-south)/(east-west)
+  );
 
-  const project = ([lon, lat]) => [
-    (lon - west) / (east - west) * width,
-    (north - lat) / (north - south) * height
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+  const image = ctx.createImageData(width,height);
+
+  // Original polygons are clipped at the Maine
+  // boundary. Their bounding-box centers are
+  // approximate grid locations, especially
+  // near the coast.
+  const points = grid.features.map(f => {
+    const fc = {type:'FeatureCollection',features:[f]};
+    const e = extentOf(fc);
+
+    return {
+      lon:(e.west+e.east)/2,
+      lat:(e.south+e.north)/2,
+      value:Number(f.properties.anomaly_f)
+    };
+  }).filter(p => Number.isFinite(p.value));
+
+  if (!points.length) {
+    throw new Error('No valid temperature points');
+  }
+
+  // Organize points in geographic buckets.
+  const bucketSize = 0.25;
+  const buckets = new Map();
+
+  function bucketKey(x,y) {
+    return x+','+y;
+  }
+
+  for (const p of points) {
+    const bx = Math.floor(p.lon/bucketSize);
+    const by = Math.floor(p.lat/bucketSize);
+    const key = bucketKey(bx,by);
+
+    if (!buckets.has(key)) buckets.set(key,[]);
+    buckets.get(key).push(p);
+  }
+
+  function interpolate(lon,lat) {
+    const bx = Math.floor(lon/bucketSize);
+    const by = Math.floor(lat/bucketSize);
+    const near = [];
+
+    // Search outward if necessary.
+    for (let radius=0; radius<=4; radius++) {
+      for (let dx=-radius; dx<=radius; dx++) {
+        for (let dy=-radius; dy<=radius; dy++) {
+          if (radius>0 &&
+              Math.max(Math.abs(dx),Math.abs(dy))!==radius) {
+            continue;
+          }
+
+          const group = buckets.get(
+            bucketKey(bx+dx,by+dy)
+          );
+
+          if (!group) continue;
+
+          for (const p of group) {
+            const x = (p.lon-lon) *
+              Math.cos(lat*Math.PI/180);
+            const y = p.lat-lat;
+            const d2 = x*x+y*y;
+            near.push({d2,value:p.value});
+          }
+        }
+      }
+
+      if (near.length>=8) break;
+    }
+
+    if (!near.length) return NaN;
+
+    near.sort((a,b)=>a.d2-b.d2);
+
+    if (near[0].d2<1e-12) {
+      return near[0].value;
+    }
+
+    let weighted=0;
+    let total=0;
+
+    // Inverse-distance-squared interpolation
+    // using the nearest eight measurements.
+    for (const p of near.slice(0,8)) {
+      const weight=1/Math.max(p.d2,1e-12);
+      weighted+=p.value*weight;
+      total+=weight;
+    }
+
+    return weighted/total;
+  }
+
+  for (let y=0; y<height; y++) {
+    const lat = north-(y+.5)/height*(north-south);
+
+    for (let x=0; x<width; x++) {
+      const lon = west+(x+.5)/width*(east-west);
+      const value = interpolate(lon,lat);
+      const i = (y*width+x)*4;
+
+      if (!Number.isFinite(value)) continue;
+
+      const rgb = rgbFor(value);
+
+      image.data[i]=rgb[0];
+      image.data[i+1]=rgb[1];
+      image.data[i+2]=rgb[2];
+      image.data[i+3]=255;
+    }
+  }
+
+  ctx.putImageData(image,0,0);
+
+  // Mask the continuous raster to the Maine
+  // county outlines, including coastal islands.
+  const mask = document.createElement('canvas');
+  mask.width=width;
+  mask.height=height;
+
+  const mc = mask.getContext('2d');
+
+  const project = ([lon,lat]) => [
+    (lon-west)/(east-west)*width,
+    (north-lat)/(north-south)*height
   ];
 
-  const original = document.createElement('canvas');
-  original.width = width;
-  original.height = height;
-
-  const ctx = original.getContext('2d');
-
-  // First draw each original ERA5-Land cell.
-  // This retains the real grid measurements.
-  for (const f of grid.features) {
-
-    const value = Number(f.properties.anomaly_f);
-
-    if (!Number.isFinite(value)) continue;
-
-    ctx.fillStyle = colorFor(value);
-
-    drawGeometry(ctx, f.geometry, project);
-    ctx.fill('evenodd');
-  }
-
-  // Create a separate smoothed surface.
-  // Blur radius is in image pixels, not
-  // degrees of geographic measurement.
-  const smooth = document.createElement('canvas');
-  smooth.width = width;
-  smooth.height = height;
-
-  const smoothCtx = smooth.getContext('2d');
-
-  smoothCtx.filter = 'blur(16px)';
-  smoothCtx.drawImage(original, 0, 0);
-  smoothCtx.filter = 'none';
-
-  // Clip the smoothed image back to Maine.
-  // The mask is applied after smoothing,
-  // keeping the geographic boundary sharp.
-  smoothCtx.globalCompositeOperation = 'destination-in';
-  smoothCtx.fillStyle = '#000';
+  mc.fillStyle='#fff';
 
   for (const f of counties.features) {
-    drawGeometry(smoothCtx, f.geometry, project);
-    smoothCtx.fill('evenodd');
+    drawGeometry(mc,f.geometry,project);
+    mc.fill('evenodd');
   }
 
-  smoothCtx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation='destination-in';
+  ctx.drawImage(mask,0,0);
+  ctx.globalCompositeOperation='source-over';
 
   return {
-    url: smooth.toDataURL('image/png'),
-    coordinates: [
-      [west, north],
-      [east, north],
-      [east, south],
-      [west, south]
+    url:canvas.toDataURL('image/png'),
+    coordinates:[
+      [west,north],
+      [east,north],
+      [east,south],
+      [west,south]
     ]
   };
 }
 
-/* ------------------------------------
-   COUNTY STATISTICS
------------------------------------- */
+/* STATISTICS */
 
 function featureName(f) {
   return f.properties.NAME ||
-         f.properties.name ||
-         f.properties.NAMELSAD ||
-         f.id ||
-         'County';
+    f.properties.name ||
+    f.properties.NAMELSAD ||
+    String(f.id);
 }
 
-function formatTemp(value, signed = false) {
-
-  if (value === null ||
-      value === undefined ||
-      !Number.isFinite(Number(value))) {
+function formatTemp(value,signed=false) {
+  if (value==null || !Number.isFinite(Number(value))) {
     return '—';
   }
 
-  const n = Number(value);
-  const prefix = signed && n > 0 ? '+' : '';
-
-  return prefix + n.toFixed(1) + '°F';
+  const n=Number(value);
+  return (signed && n>0 ? '+' : '') +
+    n.toFixed(1)+'°F';
 }
 
 function statewideStats() {
-
   if (!climateGrid?.features?.length) return null;
 
-  const values = climateGrid.features
-    .map(f => f.properties)
-    .filter(p =>
-      Number.isFinite(p.anomaly_f) &&
-      Number.isFinite(p.temperature_f) &&
-      Number.isFinite(p.normal_f)
+  const rows=climateGrid.features
+    .map(f=>f.properties)
+    .filter(p=>
+      Number.isFinite(Number(p.anomaly_f)) &&
+      Number.isFinite(Number(p.temperature_f)) &&
+      Number.isFinite(Number(p.normal_f))
     );
 
-  if (!values.length) return null;
+  if (!rows.length) return null;
 
-  const mean = key =>
-    values.reduce((sum, p) => sum + p[key], 0) /
-    values.length;
+  const mean=key=>rows.reduce(
+    (sum,p)=>sum+Number(p[key]),0
+  )/rows.length;
 
   return {
-    anomaly_f: mean('anomaly_f'),
-    temperature_f: mean('temperature_f'),
-    normal_f: mean('normal_f'),
-    grid_points: values.length
+    anomaly_f:mean('anomaly_f'),
+    temperature_f:mean('temperature_f'),
+    normal_f:mean('normal_f'),
+    grid_points:rows.length
   };
 }
 
-function displayStats(stats, statewide = false) {
-
-  if (!stats || stats.anomaly_f == null) {
-    metrics.hidden = true;
+function displayStats(stats,statewide=false) {
+  if (!stats || stats.anomaly_f==null) {
+    metrics.hidden=true;
     return;
   }
 
-  metrics.hidden = false;
+  metrics.hidden=false;
 
-  anomalyValue.textContent =
-    formatTemp(stats.anomaly_f, true);
+  anomalyValue.textContent=
+    formatTemp(stats.anomaly_f,true);
 
-  anomalyValue.className = 'metric-value';
+  anomalyValue.className='metric-value';
 
-  if (stats.anomaly_f > 0) {
+  if (stats.anomaly_f>0) {
     anomalyValue.classList.add('positive');
-  } else if (stats.anomaly_f < 0) {
+  } else if (stats.anomaly_f<0) {
     anomalyValue.classList.add('negative');
   }
 
-  temperatureValue.textContent =
+  temperatureValue.textContent=
     formatTemp(stats.temperature_f);
 
-  normalValue.textContent =
+  normalValue.textContent=
     formatTemp(stats.normal_f);
 
-  metricNote.textContent = statewide
-    ? 'Statewide estimate based on available grid centers; not area-weighted.'
-    : 'Based on ' + stats.grid_points +
+  metricNote.textContent=statewide
+    ? 'Statewide grid-center estimate; not area-weighted.'
+    : 'Based on '+stats.grid_points+
       ' grid-center values; not area-weighted.';
 }
 
 function updateDetails() {
-
   if (!active) {
-
-    title.textContent = 'Maine';
-
-    detail.textContent = climateReady
-      ? 'Statewide overview of ERA5-Land grid-center temperatures.'
+    title.textContent='Maine';
+    detail.textContent=ready
+      ? 'Statewide overview of ERA5-Land temperatures.'
       : 'Select a county to explore its temperature anomaly.';
-
-    displayStats(statewideStats(), true);
+    displayStats(statewideStats(),true);
     return;
   }
 
-  const f = features.find(
-    x => x.properties.FIPS === active
+  const f=features.find(
+    x=>x.properties.FIPS===active
   );
 
   if (!f) return;
 
-  title.textContent = featureName(f) + ' County';
-
-  detail.textContent =
+  title.textContent=featureName(f)+' County';
+  detail.textContent=
     'Daily mean temperature comparison for the selected county.';
 
-  const stats =
-    climateSummary?.county_statistics?.[active];
-
-  displayStats(stats || null);
+  const stats=climateSummary?.county_statistics?.[active];
+  displayStats(stats||null);
 }
 
-function selectCounty(id, zoom = true) {
-
-  active = id;
-  countySelect.value = id;
+function selectCounty(id,zoom=true) {
+  active=id;
+  countySelect.value=id;
 
   if (map.getLayer('selected-county')) {
-    map.setFilter('selected-county', [
-      '==',
-      ['get', 'FIPS'],
-      id
+    map.setFilter('selected-county',[
+      '==',['get','FIPS'],id
     ]);
   }
 
@@ -785,68 +804,45 @@ function selectCounty(id, zoom = true) {
   if (!zoom) return;
 
   if (!id) {
-    map.fitBounds(bounds, {
-      padding: 35,
-      duration: 600
-    });
+    map.fitBounds(bounds,{padding:35,duration:600});
     return;
   }
 
-  const f = features.find(
-    x => x.properties.FIPS === id
+  const f=features.find(
+    x=>x.properties.FIPS===id
   );
 
   if (!f) return;
 
-  const coords = [];
+  const bb=[
+    [Infinity,Infinity],
+    [-Infinity,-Infinity]
+  ];
 
-  function walk(a) {
-    if (typeof a[0] === 'number') {
-      coords.push(a);
-      return;
-    }
-    a.forEach(walk);
-  }
+  walkCoordinates(f.geometry.coordinates,([lon,lat])=>{
+    bb[0][0]=Math.min(bb[0][0],lon);
+    bb[0][1]=Math.min(bb[0][1],lat);
+    bb[1][0]=Math.max(bb[1][0],lon);
+    bb[1][1]=Math.max(bb[1][1],lat);
+  });
 
-  walk(f.geometry.coordinates);
-
-  const bb = coords.reduce(
-    (b, p) => [
-      [
-        Math.min(b[0][0], p[0]),
-        Math.min(b[0][1], p[1])
-      ],
-      [
-        Math.max(b[1][0], p[0]),
-        Math.max(b[1][1], p[1])
-      ]
-    ],
-    [
-      [Infinity, Infinity],
-      [-Infinity, -Infinity]
-    ]
-  );
-
-  map.fitBounds(bb, {
-    padding: 65,
-    maxZoom: 9,
-    duration: 600
+  map.fitBounds(bb,{
+    padding:65,
+    maxZoom:9,
+    duration:600
   });
 }
 
-/* ------------------------------------
-   LAYER VISIBILITY
------------------------------------- */
+/* VISIBILITY */
 
-function updateLayerVisibility() {
-
-  const enabled = showAnomalies.checked;
+function updateVisibility() {
+  const enabled=showAnomalies.checked;
 
   if (map.getLayer('smooth-anomalies')) {
     map.setLayoutProperty(
       'smooth-anomalies',
       'visibility',
-      enabled ? 'visible' : 'none'
+      enabled?'visible':'none'
     );
   }
 
@@ -855,305 +851,279 @@ function updateLayerVisibility() {
       'anomaly-grid',
       'visibility',
       enabled && showGrid.checked
-        ? 'visible'
-        : 'none'
+        ? 'visible':'none'
     );
   }
 
-  legend.style.display = enabled ? '' : 'none';
+  if (map.getLayer('clean-background')) {
+    map.setLayoutProperty(
+      'clean-background',
+      'visibility',
+      showBasemap.checked?'none':'visible'
+    );
+  }
+
+  legend.style.display=enabled?'':'none';
 }
 
-countySelect.addEventListener('change', () => {
+countySelect.addEventListener('change',()=>{
   selectCounty(countySelect.value);
 });
 
-$('reset').addEventListener('click', () => {
+$('reset').addEventListener('click',()=>{
   selectCounty('');
 });
 
-showAnomalies.addEventListener(
-  'change',
-  updateLayerVisibility
+[showAnomalies,showGrid,showBasemap].forEach(
+  control=>control.addEventListener(
+    'change',updateVisibility
+  )
 );
 
-showGrid.addEventListener(
-  'change',
-  updateLayerVisibility
-);
+/* LOAD */
 
-/* ------------------------------------
-   LOAD MAP AND CLIMATE DATA
------------------------------------- */
-
-map.on('load', async () => {
-
+map.on('load',async()=>{
   try {
-
-    const countyResponse = await fetch(
-      'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-    );
-
-    if (!countyResponse.ok) {
-      throw new Error(
-        'County HTTP ' + countyResponse.status
-      );
-    }
-
-    const us = await countyResponse.json();
-
-    features = us.features
-      .filter(f =>
-        String(f.id || '').padStart(5, '0').startsWith('23')
-      )
-      .map(f => ({
-        ...f,
-        properties: {
-          ...f.properties,
-          FIPS: String(f.id).padStart(5, '0')
-        }
-      }));
-
-    if (features.length !== 16) {
-      throw new Error(
-        'Expected 16 Maine counties; found ' +
-        features.length
-      );
-    }
-
-    const countyData = {
-      type: 'FeatureCollection',
-      features
-    };
-
-    map.addSource('counties', {
-      type: 'geojson',
-      data: countyData
-    });
-
-    map.addLayer({
-      id: 'county-fill',
-      type: 'fill',
-      source: 'counties',
-      paint: {
-        'fill-color': '#397d94',
-        'fill-opacity': 0.04
-      }
-    });
-
-    features
-      .sort((a, b) =>
-        featureName(a).localeCompare(featureName(b))
-      )
-      .forEach(f => {
-
-        const option = document.createElement('option');
-
-        option.value = f.properties.FIPS;
-        option.textContent = featureName(f);
-
-        countySelect.appendChild(option);
-      });
-
-    const [gridResponse, summaryResponse] =
+    const [countyResponse,gridResponse,summaryResponse]=
       await Promise.all([
+        fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'),
         fetch('./data/anomalies.geojson'),
         fetch('./data/summary.json')
       ]);
 
+    if (!countyResponse.ok) {
+      throw new Error(
+        'County HTTP '+countyResponse.status
+      );
+    }
+
     if (!gridResponse.ok) {
       throw new Error(
-        'Climate grid HTTP ' + gridResponse.status
+        'Climate grid HTTP '+gridResponse.status
       );
     }
 
     if (!summaryResponse.ok) {
       throw new Error(
-        'Climate summary HTTP ' + summaryResponse.status
+        'Summary HTTP '+summaryResponse.status
       );
     }
 
-    climateGrid = await gridResponse.json();
-    climateSummary = await summaryResponse.json();
+    const us=await countyResponse.json();
+    climateGrid=await gridResponse.json();
+    climateSummary=await summaryResponse.json();
+
+    features=us.features
+      .filter(f=>
+        String(f.id||'').padStart(5,'0').startsWith('23')
+      )
+      .map(f=>({
+        ...f,
+        properties:{
+          ...f.properties,
+          FIPS:String(f.id).padStart(5,'0')
+        }
+      }));
+
+    if (features.length!==16) {
+      throw new Error(
+        'Expected 16 counties; found '+features.length
+      );
+    }
 
     if (!climateGrid.features?.length) {
       throw new Error('Climate grid is empty');
     }
 
-    status.textContent =
-      'Generating smooth temperature surface…';
+    const countyData={
+      type:'FeatureCollection',
+      features
+    };
 
-    // Build the smooth image from actual
-    // grid measurements, then display it
-    // as a geographic MapLibre image source.
-    const surface = makeSmoothSurface(
-      climateGrid,
-      countyData
+    // A white layer above the basemap gives
+    // a clean map without changing map styles.
+    map.addLayer({
+      id:'clean-background',
+      type:'background',
+      paint:{
+        'background-color':'#f8fafb',
+        'background-opacity':1
+      }
+    });
+
+    map.addSource('counties',{
+      type:'geojson',
+      data:countyData
+    });
+
+    map.addLayer({
+      id:'county-fill',
+      type:'fill',
+      source:'counties',
+      paint:{
+        'fill-color':'#ffffff',
+        'fill-opacity':0.01
+      }
+    });
+
+    features.sort((a,b)=>
+      featureName(a).localeCompare(featureName(b))
+    ).forEach(f=>{
+      const option=document.createElement('option');
+      option.value=f.properties.FIPS;
+      option.textContent=featureName(f);
+      countySelect.appendChild(option);
+    });
+
+    status.textContent=
+      'Interpolating temperature measurements…';
+
+    // Allow the status message to paint before
+    // performing the raster calculation.
+    await new Promise(resolve=>
+      requestAnimationFrame(()=>
+        requestAnimationFrame(resolve)
+      )
     );
 
-    map.addSource('smooth-temperature', {
-      type: 'image',
-      url: surface.url,
-      coordinates: surface.coordinates
+    const surface=makeSurface(
+      climateGrid,countyData
+    );
+
+    map.addSource('smooth-temperature',{
+      type:'image',
+      url:surface.url,
+      coordinates:surface.coordinates
     });
 
     map.addLayer({
-      id: 'smooth-anomalies',
-      type: 'raster',
-      source: 'smooth-temperature',
-      paint: {
-        'raster-opacity': 0.92,
-        'raster-fade-duration': 0
+      id:'smooth-anomalies',
+      type:'raster',
+      source:'smooth-temperature',
+      paint:{
+        'raster-opacity':1,
+        'raster-fade-duration':0,
+        'raster-resampling':'linear'
       }
     });
 
-    // Keep the original grid boundaries
-    // available as a separate overlay.
-    map.addSource('anomalies', {
-      type: 'geojson',
-      data: climateGrid
+    map.addSource('anomalies',{
+      type:'geojson',
+      data:climateGrid
     });
 
     map.addLayer({
-      id: 'anomaly-grid',
-      type: 'line',
-      source: 'anomalies',
-      layout: {
-        visibility: 'none'
-      },
-      paint: {
-        'line-color': '#303030',
-        'line-opacity': 0.38,
-        'line-width': 0.6
-      }
-    });
-
-    map.addLayer({
-      id: 'selected-county',
-      type: 'fill',
-      source: 'counties',
-      filter: [
-        '==',
-        ['get', 'FIPS'],
-        ''
-      ],
-      paint: {
-        'fill-color': '#1f3c71',
-        'fill-opacity': 0.12
+      id:'anomaly-grid',
+      type:'line',
+      source:'anomalies',
+      layout:{visibility:'none'},
+      paint:{
+        'line-color':'#34495e',
+        'line-opacity':0.38,
+        'line-width':0.6
       }
     });
 
     map.addLayer({
-      id: 'county-lines',
-      type: 'line',
-      source: 'counties',
-      paint: {
-        'line-color': '#455761',
-        'line-width': 1.1,
-        'line-opacity': 0.85
+      id:'selected-county',
+      type:'fill',
+      source:'counties',
+      filter:['==',['get','FIPS'],''],
+      paint:{
+        'fill-color':'#1f3c71',
+        'fill-opacity':0.15
       }
     });
 
-    // The smooth raster is visual only.
-    // Popups read the original grid values.
-    map.on('click', e => {
+    map.addLayer({
+      id:'county-lines',
+      type:'line',
+      source:'counties',
+      paint:{
+        'line-color':'#536371',
+        'line-width':1.1,
+        'line-opacity':0.9
+      }
+    });
 
-      const countyHits = map.queryRenderedFeatures(
-        e.point,
-        { layers: ['county-fill'] }
+    // Invisible hit layer for original values.
+    map.addLayer({
+      id:'anomaly-hit',
+      type:'fill',
+      source:'anomalies',
+      paint:{
+        'fill-color':'#ffffff',
+        'fill-opacity':0
+      }
+    });
+
+    // County selection remains independent
+    // of the temperature interpolation.
+    map.on('click',e=>{
+      const hits=map.queryRenderedFeatures(
+        e.point,{layers:['county-fill']}
       );
 
-      if (countyHits.length) {
-        selectCounty(countyHits[0].properties.FIPS);
+      if (hits.length) {
+        selectCounty(hits[0].properties.FIPS);
       }
-
-      if (!showAnomalies.checked) return;
-
-      const gridHits = map.queryRenderedFeatures(
-        e.point,
-        { layers: ['anomaly-grid'] }
-      );
-
-      // Grid lines are not suitable for
-      // selecting every interior cell.
-      // We'll use a separate invisible fill.
     });
 
-    // Transparent interaction layer uses
-    // original unsmoothed measurements.
-    map.addLayer({
-      id: 'anomaly-hit',
-      type: 'fill',
-      source: 'anomalies',
-      paint: {
-        'fill-color': '#ffffff',
-        'fill-opacity': 0
-      }
-    }, 'county-lines');
-
-    map.on('click', 'anomaly-hit', e => {
-
+    map.on('click','anomaly-hit',e=>{
       if (!showAnomalies.checked) return;
 
-      const p = e.features[0].properties;
+      const p=e.features[0].properties;
 
       new maplibregl.Popup({
-        closeButton: true,
-        maxWidth: '240px'
+        closeButton:true,
+        maxWidth:'240px'
       })
-        .setLngLat(e.lngLat)
-        .setHTML(
-          '<strong>Temperature anomaly</strong>' +
-          '<div>' + formatTemp(p.anomaly_f, true) + '</div>' +
-          '<div>Daily mean: ' +
-          formatTemp(p.temperature_f) + '</div>' +
-          '<div>Historical mean: ' +
-          formatTemp(p.normal_f) + '</div>' +
-          '<div style="font-size:11px;color:#666;margin-top:5px;">' +
-          'Original ERA5-Land grid-cell value</div>'
-        )
-        .addTo(map);
+      .setLngLat(e.lngLat)
+      .setHTML(
+        '<strong>Original grid estimate</strong>'+
+        '<div>Anomaly: '+
+          formatTemp(p.anomaly_f,true)+'</div>'+
+        '<div>Daily mean: '+
+          formatTemp(p.temperature_f)+'</div>'+
+        '<div>Historical mean: '+
+          formatTemp(p.normal_f)+'</div>'+
+        '<div style="font-size:11px;color:#666;margin-top:5px;">'+
+          'ERA5-Land grid value, not interpolated'+
+        '</div>'
+      )
+      .addTo(map);
     });
 
-    map.on('mousemove', e => {
-
-      const hits = map.queryRenderedFeatures(
-        e.point,
-        { layers: ['county-fill'] }
+    map.on('mousemove',e=>{
+      const hits=map.queryRenderedFeatures(
+        e.point,{layers:['county-fill']}
       );
-
-      map.getCanvas().style.cursor =
-        hits.length ? 'pointer' : '';
+      map.getCanvas().style.cursor=
+        hits.length?'pointer':'';
     });
 
-    climateReady = true;
-
-    updateLayerVisibility();
+    ready=true;
+    updateVisibility();
     updateDetails();
 
-    map.fitBounds(bounds, {
-      padding: 35,
-      duration: 0
+    map.fitBounds(bounds,{
+      padding:35,
+      duration:0
     });
 
-    status.textContent =
-      'Loaded 16 counties and ' +
-      climateGrid.features.length +
-      ' temperature grid cells. Smooth surface active.';
+    status.textContent=
+      'Loaded 16 counties and '+
+      climateGrid.features.length+
+      ' climate grid cells. Interpolated surface active.';
 
-  } catch (err) {
-
-    status.textContent =
-      'Could not load map data: ' + err.message;
-
-    detail.textContent =
-      'The temperature dataset could not be displayed.';
-
+  } catch(err) {
     console.error(err);
+    status.textContent=
+      'Could not display climate data: '+err.message;
+    detail.textContent=
+      'Map loading failed. Check the browser console for details.';
   }
-
 });
-
 </script>
-
 </body>
 </html>
