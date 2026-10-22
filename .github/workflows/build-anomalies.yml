@@ -10,12 +10,15 @@ concurrency:
   cancel-in-progress: false
 jobs:
   climate:
+    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: v2-testing
           persist-credentials: true
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -59,8 +62,49 @@ jobs:
           assert len(s['county_statistics'])==16
           assert s['grid_cell_count']==len(g['features'])
           assert s['state_statistics']['area_km2']>0
+          
+          import subprocess
+
+          previous = json.loads(
+              subprocess.check_output(
+                  ['git', 'show', 'HEAD:data/summary.json'],
+                  text=True
+              )
+          )
+          assert s['date'] >= previous['date'], (
+              f"Refusing to replace {previous['date']} with older data {s['date']}"
+          )
+
           print('Validated',s['date'])
           PY
+          
+      - name: Archive latest temperature observation
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+
+          data = Path('data')
+          summary = data / 'summary.json'
+          grid = data / 'anomalies.geojson'
+
+          day = json.loads(summary.read_text())['date']
+          folder = data / 'history' / day
+          folder.mkdir(parents=True, exist_ok=True)
+
+          for name in ('summary.json', 'anomalies.geojson'):
+              (folder / name).write_bytes((data / name).read_bytes())
+
+          index = data / 'history' / 'index.json'
+          dates = json.loads(index.read_text()) if index.exists() else []
+          index.write_text(
+              json.dumps(sorted(set(dates + [day]), reverse=True), indent=2)
+              + '\n'
+          )
+
+          print('Archived temperature observation:', day)
+          PYCODE
+
       - name: Publish validated results
         run: |
           git config user.name 'github-actions[bot]'
@@ -68,6 +112,6 @@ jobs:
           git add data/anomalies.geojson data/summary.json data/history/ data/baselines/
           if ! git diff --cached --quiet; then
             git commit -m 'Update Maine daily temperature anomalies'
-            git pull --rebase origin main
-            git push origin HEAD:main
+            git pull --rebase origin v2-testing
+            git push origin HEAD:v2-testing
           fi
