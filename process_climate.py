@@ -21,7 +21,7 @@ from pyproj import Geod
 # This script lives in .github/workflows/.
 # Data files belong in the repository's
 # top-level data/ folder.
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 DATA.mkdir(parents=True, exist_ok=True)
 
