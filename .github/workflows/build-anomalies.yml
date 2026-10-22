@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install cdsapi xarray numpy netCDF4 shapely
+          python -m pip install cdsapi xarray numpy pandas netCDF4 shapely pyproj
 
       - name: Download ERA5-Land datasets
         env:
@@ -34,6 +34,7 @@ jobs:
           python - <<'PY'
           import cdsapi
           from pathlib import Path
+          import zipfile
 
           Path("data").mkdir(exist_ok=True)
 
@@ -50,7 +51,58 @@ jobs:
               "area": [47.6, -71.2, 42.8, -66.8]
           }
 
-          print("Downloading 1961–1990 baseline...", flush=True)
+          def download(request, output):
+              result = client.retrieve(dataset, request)
+              result.download(output)
+
+              path = Path(output)
+
+              if not path.exists() or path.stat().st_size == 0:
+                  raise RuntimeError(
+                      f"Missing or empty download: {output}"
+                  )
+
+              print(
+                  f"Downloaded {output}: "
+                  f"{path.stat().st_size:,} bytes",
+                  flush=True
+              )
+
+              # CDS downloads may be ZIP archives,
+              # even when saved with an .nc extension.
+              if zipfile.is_zipfile(path):
+                  with zipfile.ZipFile(path) as archive:
+                      members = [
+                          m for m in archive.namelist()
+                          if m.lower().endswith((".nc", ".nc4"))
+                      ]
+
+                      if len(members) != 1:
+                          raise RuntimeError(
+                              f"Expected one NetCDF in {output}; "
+                              f"found {len(members)}"
+                          )
+
+                      data = archive.read(members[0])
+
+                  path.write_bytes(data)
+
+              # Verify the result is a NetCDF file.
+              import xarray as xr
+
+              with xr.open_dataset(
+                  path,
+                  engine="netcdf4"
+              ) as ds:
+                  print(
+                      f"{output} dimensions: {dict(ds.sizes)}",
+                      flush=True
+                  )
+
+          print(
+              "Downloading 1961–1990 baseline...",
+              flush=True
+          )
 
           historical = {
               **common,
@@ -59,35 +111,32 @@ jobs:
               ]
           }
 
-          client.retrieve(
-              dataset,
-              historical,
-              "data/baseline.nc"
-          )
+          download(historical, "data/baseline.nc")
 
-          print("Downloading October 15, 2025...", flush=True)
+          print(
+              "Downloading October 15, 2025...",
+              flush=True
+          )
 
           current = {
               **common,
               "year": ["2025"]
           }
 
-          client.retrieve(
-              dataset,
-              current,
-              "data/target.nc"
-          )
+          download(current, "data/target.nc")
 
           print("Both downloads completed.", flush=True)
           PY
 
       - name: Calculate anomalies
-        run: python process_climate.py
+        run: |
+          python .github/workflows/process_climate.py
 
       - name: Validate outputs
         run: |
           python - <<'PY'
           import json
+          import math
           from pathlib import Path
 
           geo = json.loads(
@@ -98,21 +147,71 @@ jobs:
               Path("data/summary.json").read_text()
           )
 
-          count = len(geo["features"])
-          counties = len(summary["county_statistics"])
+          features = geo["features"]
+          counties = summary["county_statistics"]
+          state = summary["state_statistics"]
 
-          if count < 100:
+          if len(features) < 100:
               raise RuntimeError(
-                  f"Unexpectedly few grid cells: {count}"
+                  f"Unexpectedly few grid cells: {len(features)}"
               )
 
-          if counties != 16:
+          if len(counties) != 16:
               raise RuntimeError(
-                  f"Expected 16 county summaries, got {counties}"
+                  f"Expected 16 counties, got {len(counties)}"
               )
 
-          print("Validated grid cells:", count)
-          print("Validated counties:", counties)
+          required = [
+              "anomaly_f",
+              "temperature_f",
+              "normal_f",
+              "center_lon",
+              "center_lat",
+              "land_area_km2"
+          ]
+
+          for feature in features:
+              props = feature["properties"]
+
+              for key in required:
+                  if key not in props:
+                      raise RuntimeError(
+                          f"Missing grid property: {key}"
+                      )
+
+                  if not math.isfinite(float(props[key])):
+                      raise RuntimeError(
+                          f"Invalid grid property: {key}"
+                      )
+
+          if not math.isfinite(state["anomaly_f"]):
+              raise RuntimeError(
+                  "Invalid statewide anomaly"
+              )
+
+          if state["area_km2"] <= 0:
+              raise RuntimeError(
+                  "Invalid statewide land area"
+              )
+
+          for fips, stats in counties.items():
+              if stats["area_km2"] <= 0:
+                  raise RuntimeError(
+                      f"Invalid area for county {fips}"
+                  )
+
+          print("Validated grid cells:", len(features))
+          print("Validated counties:", len(counties))
+          print(
+              "Area-weighted statewide anomaly:",
+              state["anomaly_f"],
+              "°F"
+          )
+          print(
+              "Mapped land area:",
+              state["area_km2"],
+              "km²"
+          )
           PY
 
       - name: Save generated data
@@ -134,6 +233,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data changes to publish."
           else
-            git commit -m "Generate Maine climate anomaly data"
+            git commit -m "Generate validated Maine climate anomaly data"
             git push
           fi
