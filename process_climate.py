@@ -28,7 +28,7 @@ DATA.mkdir(parents=True, exist_ok=True)
 BASELINE_FILE = DATA / "baseline.nc"
 TARGET_FILE = DATA / "target.nc"
 
-TARGET_DATE = "2025-10-15"
+TARGET_DATE = (DATA / "target-date.txt").read_text().strip() if (DATA / "target-date.txt").exists() else "2025-10-15"
 BASELINE_START = 1961
 BASELINE_END = 1990
 
@@ -185,6 +185,9 @@ def validate_historical(arr):
         )
     ]
 
+    if TARGET_DATE[5:] == "02-29":
+        expected = [d for d in expected if int(d[:4]) % 4 == 0 and (int(d[:4]) % 100 != 0 or int(d[:4]) % 400 == 0)]
+
     if sorted(actual) != expected:
         missing = sorted(
             set(expected) - set(actual)
@@ -194,8 +197,7 @@ def validate_historical(arr):
         )
 
         raise ValueError(
-            "Historical baseline must contain "
-            "exactly 30 daily observations. "
+            "Historical baseline has missing or unexpected observations. "
             f"Missing: {missing}. "
             f"Unexpected: {extra}. "
             f"Actual count: {len(actual)}"
@@ -323,7 +325,7 @@ baseline_f = (
     (baseline - 273.15) * 1.8 + 32
 )
 
-print("Baseline dates validated: 30")
+print("Baseline dates validated:", len(dates_for(historical, time_dimension(historical))))
 print("Target date validated:", TARGET_DATE)
 
 
@@ -540,7 +542,7 @@ summary = {
     "date": TARGET_DATE,
     "baseline": "1961-1990",
     "baseline_method": (
-        "Mean of October 15 daily "
+        f"Mean of {TARGET_DATE[5:]} daily "
         "temperatures for 1961-1990"
     ),
     "source": (
@@ -583,3 +585,12 @@ print(
 )
 print("Created data/anomalies.geojson")
 print("Created data/summary.json")
+
+# Archive each successfully validated date for historical selection.
+archive = DATA / "history" / TARGET_DATE
+archive.mkdir(parents=True, exist_ok=True)
+(archive / "anomalies.geojson").write_bytes((DATA / "anomalies.geojson").read_bytes())
+(archive / "summary.json").write_bytes((DATA / "summary.json").read_bytes())
+manifest_path = DATA / "history" / "index.json"
+existing = json.loads(manifest_path.read_text()) if manifest_path.exists() else []
+manifest_path.write_text(json.dumps(sorted(set(existing + [TARGET_DATE]), reverse=True), indent=2))

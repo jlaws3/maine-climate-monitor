@@ -314,15 +314,13 @@ select {
 <main class="shell">
 
   <div class="eyebrow">
-    Maine Climate Monitor · Version 1.9.1
+    Maine Climate Monitor · Version 2.0
   </div>
 
-  <h1>Maine temperature anomalies</h1>
+  <h1>Maine Climate Monitor</h1>
 
   <p class="intro">
-    How did temperatures on October 15, 2025 compare
-    with the same calendar day during 1961–1990?
-    Explore Maine's temperature patterns and select a county.
+    Explore Maine’s daily temperature anomalies and weekly drought conditions. Select a county or explore available historical dates.
   </p>
 
   <div class="layout">
@@ -334,6 +332,12 @@ select {
       <canvas id="climate-overlay"></canvas>
 
       <div class="map-controls">
+        <div class="control" style="display:flex;gap:7px;flex-direction:column">
+          <label for="data-mode">Map layer</label>
+          <select id="data-mode" aria-label="Map layer"><option value="temperature">Temperature</option><option value="drought">Drought</option></select>
+          <label for="data-date">Available dates</label>
+          <select id="data-date" aria-label="Available observation dates"></select>
+        </div>
 
         <div class="control">
           <label>
@@ -374,7 +378,8 @@ select {
           <span>+15°F</span>
         </div>
 
-        <div class="legend-caption">
+        <div id="drought-legend" hidden style="display:none"><div style="display:flex;gap:5px;flex-wrap:wrap"><span style="background:#ffff00;padding:5px 8px;font-size:12px;border-radius:4px">D0</span><span style="background:#fcd37f;padding:5px 8px;font-size:12px;border-radius:4px">D1</span><span style="background:#ffaa00;padding:5px 8px;font-size:12px;border-radius:4px">D2</span><span style="background:#e60000;padding:5px 8px;font-size:12px;border-radius:4px">D3</span><span style="background:#730000;padding:5px 8px;font-size:12px;border-radius:4px">D4</span></div><div class="legend-caption">D0: abnormally dry; D1–D4: drought severity. Unshaded areas have no drought classification.</div></div>
+        <div class="legend-caption" id="temperature-legend-caption">
           Blue is cooler than average; red is warmer.
           Fixed ±15°F scale. Colors between ERA5-Land
           grid centers are interpolated.
@@ -406,7 +411,7 @@ select {
 
         <div class="metric">
           <div class="metric-label">
-            Temperature anomaly
+            <span id="main-metric-label">Temperature anomaly</span>
           </div>
 
           <div class="metric-value" id="anomaly-value">
@@ -414,7 +419,7 @@ select {
           </div>
 
           <div class="metric-sub">
-            October 15, 2025 vs. 1961–1990 average
+            <span id="metric-period">Daily comparison with 1961–1990</span>
           </div>
         </div>
 
@@ -422,7 +427,7 @@ select {
 
           <div class="small-metric">
             <div class="metric-label">
-              Daily mean
+              <span id="secondary-label-1">Daily mean</span>
             </div>
             <div class="metric-value" id="temperature-value">
               —
@@ -431,7 +436,7 @@ select {
 
           <div class="small-metric">
             <div class="metric-label">
-              Historical mean
+              <span id="secondary-label-2">Historical mean</span>
             </div>
             <div class="metric-value" id="normal-value">
               —
@@ -453,9 +458,7 @@ select {
       </p>
 
       <p class="note">
-        <strong>Source:</strong> Copernicus ERA5-Land
-        daily mean 2-meter air temperature.
-        Historical baseline: 1961–1990.
+        <strong>Source:</strong> <span id="source-note">Copernicus ERA5-Land daily mean 2-meter air temperature; baseline 1961–1990.</span>
       </p>
 
     </aside>
@@ -464,9 +467,7 @@ select {
 
   <p class="note">
     <strong>Methodology:</strong>
-    Temperature anomaly is the October 15, 2025 daily mean
-    minus the average of October 15 daily means during
-    1961–1990. Statewide and county statistics are weighted
+    Temperature anomaly is the selected daily mean minus the average for that calendar day during 1961–1990. Statewide and county statistics are weighted
     by the geodesic land-area overlap between ERA5-Land
     grid cells and county polygons. Map shading uses
     inverse-distance interpolation between original
@@ -477,7 +478,7 @@ select {
     is reanalysis data, not direct weather-station observations.
     Geography: Plotly US county boundaries.
     Optional basemap: OpenFreeMap.
-    Prototype visualization.
+    Drought polygons and county coverage are derived from the weekly U.S. Drought Monitor. D0 is abnormally dry, not drought. Both datasets show their actual observation dates. Prototype visualization.
   </p>
 
 </main>
@@ -535,6 +536,15 @@ map.addControl(
 let features = [];
 let climateGrid = null;
 let climateSummary = null;
+let droughtGrid = null;
+let droughtSummary = null;
+let mode = "temperature";
+let currentDate = "";
+const latestDates={temperature:"",drought:""};
+const modeSelect = $("data-mode");
+const dateSelect = $("data-date");
+const droughtLegend = $("drought-legend");
+const temperatureLegendCaption = $("temperature-legend-caption");
 
 let active = '';
 let ready = false;
@@ -920,7 +930,7 @@ function resizeOverlay() {
 }
 
 function drawOverlay() {
-  if (!ready || !temperatureImage || !features.length) {
+  if (!ready || !features.length || (mode === "temperature" && !temperatureImage)) {
     return;
   }
 
@@ -937,7 +947,22 @@ function drawOverlay() {
     Clip to the exact Maine county geometry.
   */
 
-  if (showAnomalies.checked) {
+  if (mode === "drought" && droughtGrid && showAnomalies.checked) {
+    ctx.save();
+    ctx.beginPath();
+    for (const feature of features) traceGeometry(ctx, feature.geometry);
+    ctx.clip("evenodd");
+    const colors=["#ffff00","#fcd37f","#ffaa00","#e60000","#730000"];
+    for (const feature of droughtGrid.features) {
+      ctx.beginPath();
+      traceGeometry(ctx, feature.geometry);
+      ctx.fillStyle=colors[Number(feature.properties.severity)] || "#ccc";
+      ctx.fill("evenodd");
+    }
+    ctx.restore();
+  }
+
+  if (mode === "temperature" && showAnomalies.checked) {
     ctx.save();
     ctx.beginPath();
 
@@ -982,6 +1007,7 @@ function drawOverlay() {
   */
 
   if (
+    mode === "temperature" &&
     showAnomalies.checked &&
     showGrid.checked &&
     climateGrid?.features?.length
@@ -1088,6 +1114,24 @@ function formatTemp(value,signed=false) {
 }
 
 function displayStats(stats,statewide=false) {
+  if (mode === "drought") {
+    if (!stats) { metrics.hidden=true; return; }
+    metrics.hidden=false;
+    $("main-metric-label").textContent="Land in drought (D1–D4)";
+    $("secondary-label-1").textContent="Abnormally dry (D0)";
+    $("secondary-label-2").textContent="Severe or worse (D2–D4)";
+    $("metric-period").textContent="USDM week of " + currentDate;
+    anomalyValue.textContent=Number(stats.D1_plus).toFixed(1)+"%";
+    anomalyValue.className="metric-value";
+    temperatureValue.textContent=Number(stats.D0).toFixed(1)+"%";
+    normalValue.textContent=(["D2","D3","D4"].reduce((a,k)=>a+Number(stats[k]||0),0)).toFixed(1)+"%";
+    metricNote.textContent="Exclusive drought categories, land-area weighted. D0 is not drought. " + Number(stats.area_km2).toLocaleString("en-US",{maximumFractionDigits:0})+" km² mapped.";
+    return;
+  }
+  $("main-metric-label").textContent="Temperature anomaly";
+  $("secondary-label-1").textContent="Daily mean";
+  $("secondary-label-2").textContent="Historical mean";
+  $("metric-period").textContent=currentDate+" vs. 1961–1990 calendar-day average";
   if (!stats || stats.anomaly_f==null) {
     metrics.hidden=true;
     return;
@@ -1133,11 +1177,11 @@ function updateDetails() {
     title.textContent='Maine';
 
     detail.textContent=ready
-      ? 'Statewide daily mean temperature comparison.'
+      ? (mode === 'drought' ? 'Statewide drought coverage.' : 'Statewide daily mean temperature comparison.')
       : 'Select a county to explore its temperature anomaly.';
 
     displayStats(
-      climateSummary?.state_statistics,
+      (mode === "drought" ? droughtSummary : climateSummary)?.state_statistics,
       true
     );
 
@@ -1154,10 +1198,10 @@ function updateDetails() {
     featureName(feature)+' County';
 
   detail.textContent=
-    'Daily mean temperature comparison for the selected county.';
+    mode === 'drought' ? 'Drought coverage for the selected county.' : 'Daily mean temperature comparison for the selected county.';
 
   displayStats(
-    climateSummary?.county_statistics?.[active],
+    (mode === "drought" ? droughtSummary : climateSummary)?.county_statistics?.[active],
     false
   );
 }
@@ -1223,8 +1267,13 @@ function updateVisibility() {
     );
   }
 
-  legend.style.display=
-    showAnomalies.checked ? '' : 'none';
+  legend.style.display=showAnomalies.checked ? '' : 'none';
+  $("drought-legend").style.display=mode === "drought" ? "block" : "none";
+  $("temperature-legend-caption").style.display=mode === "temperature" ? "block" : "none";
+  $("legend").querySelector(".legend-bar").style.display=mode === "temperature" ? "block" : "none";
+  $("legend").querySelector(".legend-labels").style.display=mode === "temperature" ? "flex" : "none";
+  $("legend").querySelector(".legend-title").textContent=mode === "temperature" ? "Temperature difference from historical average" : "U.S. Drought Monitor severity";
+  showGrid.disabled=mode === "drought";
 
   requestOverlayRender();
 }
@@ -1262,6 +1311,81 @@ map.on('moveend',requestOverlayRender);
    LOAD DATA
 ----------------------------------- */
 
+async function fetchJson(path) {
+  const r=await fetch(path,{cache:'no-store'});
+  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+  return r.json();
+}
+
+async function initializeVersion2() {
+  try {
+    [droughtGrid,droughtSummary]=await Promise.all([
+      fetchJson('./data/drought.geojson'),
+      fetchJson('./data/drought-summary.json')
+    ]);
+    if (Object.keys(droughtSummary.county_statistics||{}).length!==16) throw new Error('Drought county data incomplete');
+  } catch(e) {
+    console.warn('Drought data not yet published:',e);
+    droughtGrid=null;droughtSummary=null;
+    modeSelect.querySelector('[value="drought"]').disabled=true;
+  }
+  await updateDateOptions();
+}
+
+async function updateDateOptions() {
+  const path=mode==='temperature'?'./data/history/index.json':'./data/drought-history/index.json';
+  let dates=[];
+  try { dates=await fetchJson(path); } catch(e) { console.warn('No history index yet',e); }
+  const latest=latestDates[mode];
+  if (latest) dates=[...new Set([latest,...dates])].sort().reverse();
+  dateSelect.replaceChildren();
+  for (const d of dates) {
+    const option=document.createElement('option');
+    option.value=d;option.textContent=d;
+    dateSelect.appendChild(option);
+  }
+  currentDate=latest||'';
+  dateSelect.value=currentDate;
+  $('source-note').textContent=mode==='temperature'
+    ? 'Copernicus ERA5-Land, daily mean 2-meter air temperature; 1961–1990 baseline. Observation: '+currentDate
+    : 'U.S. Drought Monitor, weekly GIS boundaries. Valid week: '+currentDate+'. D0 is abnormally dry, not drought.';
+  updateVisibility();updateDetails();requestOverlayRender();
+}
+
+modeSelect.addEventListener('change',async()=>{
+  mode=modeSelect.value;
+  await updateDateOptions();
+  status.textContent=mode==='drought'?'Weekly drought layer active.':'Daily temperature anomaly layer active.';
+});
+
+dateSelect.addEventListener('change',async()=>{
+  const chosen=dateSelect.value;
+  const original=currentDate;
+  try {
+    if (mode==='temperature') {
+      const base=chosen===climateSummary?.date ? './data/' : './data/history/'+chosen+'/';
+      const [g,s]=await Promise.all([fetchJson(base+'anomalies.geojson'),fetchJson(base+'summary.json')]);
+      validateClimateData(g,s);
+      climateGrid=g;climateSummary=s;
+      map.getSource('anomalies').setData(g);
+      buildTemperatureImage(g,{type:'FeatureCollection',features});
+    } else {
+      const base=chosen===droughtSummary?.date ? './data/' : './data/drought-history/'+chosen+'/';
+      const [g,s]=await Promise.all([fetchJson(base+'drought.geojson'),fetchJson(base+'drought-summary.json')]);
+      if (Object.keys(s.county_statistics||{}).length!==16) throw new Error('Incomplete drought statistics');
+      droughtGrid=g;droughtSummary=s;
+    }
+    currentDate=chosen;
+    $('source-note').textContent=(mode==='temperature'?'Copernicus ERA5-Land, daily mean temperature.':'U.S. Drought Monitor, weekly severity.')+' Observation: '+chosen;
+    updateDetails();requestOverlayRender();
+    status.textContent='Showing '+chosen+' '+mode+' data.';
+  } catch(e) {
+    console.error(e);
+    dateSelect.value=original;
+    status.textContent='Could not load selected date: '+e.message;
+  }
+});
+
 map.on('load',async()=>{
   try {
     const [
@@ -1272,8 +1396,8 @@ map.on('load',async()=>{
       fetch(
         'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
       ),
-      fetch('./data/anomalies.geojson'),
-      fetch('./data/summary.json')
+      fetch('./data/anomalies.geojson', {cache:"no-store"}),
+      fetch('./data/summary.json', {cache:'no-store'})
     ]);
 
     if (!countyResponse.ok) {
@@ -1442,7 +1566,7 @@ map.on('load',async()=>{
     */
 
     map.on('click','anomaly-hit',e=>{
-      if (!showAnomalies.checked) return;
+      if (mode !== 'temperature' || !showAnomalies.checked) return;
       if (!e.features?.length) return;
 
       const p=e.features[0].properties;
@@ -1481,6 +1605,7 @@ map.on('load',async()=>{
     });
 
     ready=true;
+    await initializeVersion2();
 
     map.fitBounds(bounds,{
       padding:35,

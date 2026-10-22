@@ -1,0 +1,42 @@
+name: Update Maine Drought Monitor
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 19 * * 4,5'
+permissions:
+  contents: write
+concurrency:
+  group: maine-data-publish
+  cancel-in-progress: false
+jobs:
+  drought:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip geopandas shapely pyproj
+      - run: python process_drought.py
+      - name: Validate and publish
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path('data/drought-summary.json').read_text())
+          assert len(s['county_statistics'])==16
+          for stats in [s['state_statistics'],*s['county_statistics'].values()]:
+              assert abs(sum(stats[f'D{i}'] for i in range(5))+stats['none']-100)<0.25
+          print('Validated drought data',s['date'])
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/drought.geojson data/drought-summary.json data/drought-history/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update Maine drought monitor data'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

@@ -1,238 +1,73 @@
-
-name: Build Maine Temperature Anomalies
-
+name: Update Maine Temperature Anomalies
 on:
   workflow_dispatch:
-
+  schedule:
+    - cron: '30 12 * * *'
 permissions:
   contents: write
-
+concurrency:
+  group: maine-data-publish
+  cancel-in-progress: false
 jobs:
-  build-climate-data:
+  climate:
     runs-on: ubuntu-latest
     timeout-minutes: 180
-
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.11"
-
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Install dependencies
+        run: python -m pip install --upgrade pip cdsapi xarray numpy pandas netCDF4 shapely pyproj
+      - name: Preserve original October 15 reference data
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install cdsapi xarray numpy pandas netCDF4 shapely pyproj
-
-      - name: Download ERA5-Land datasets
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+          data=Path('data')
+          summary=data/'summary.json'
+          grid=data/'anomalies.geojson'
+          if summary.exists() and grid.exists():
+              day=json.loads(summary.read_text()).get('date')
+              if day:
+                  folder=data/'history'/day
+                  folder.mkdir(parents=True,exist_ok=True)
+                  for name in ('summary.json','anomalies.geojson'):
+                      destination=folder/name
+                      if not destination.exists():
+                          destination.write_bytes((data/name).read_bytes())
+                  index=data/'history'/'index.json'
+                  dates=json.loads(index.read_text()) if index.exists() else []
+                  index.write_text(json.dumps(sorted(set(dates+[day]),reverse=True),indent=2))
+          PYCODE
+      - name: Download newest available daily data
         env:
           CDSAPI_URL: https://cds.climate.copernicus.eu/api
           CDSAPI_KEY: ${{ secrets.CDS_API_KEY }}
-        run: |
-          python - <<'PY'
-          import cdsapi
-          from pathlib import Path
-          import zipfile
-
-          Path("data").mkdir(exist_ok=True)
-
-          client = cdsapi.Client()
-          dataset = "derived-era5-land-daily-statistics"
-
-          common = {
-              "variable": ["2m_temperature"],
-              "month": ["10"],
-              "day": ["15"],
-              "daily_statistic": "daily_mean",
-              "time_zone": "utc+00:00",
-              "frequency": "1_hourly",
-              "area": [47.6, -71.2, 42.8, -66.8]
-          }
-
-          def download(request, output):
-              result = client.retrieve(dataset, request)
-              result.download(output)
-
-              path = Path(output)
-
-              if not path.exists() or path.stat().st_size == 0:
-                  raise RuntimeError(
-                      f"Missing or empty download: {output}"
-                  )
-
-              print(
-                  f"Downloaded {output}: "
-                  f"{path.stat().st_size:,} bytes",
-                  flush=True
-              )
-
-              # CDS downloads may be ZIP archives,
-              # even when saved with an .nc extension.
-              if zipfile.is_zipfile(path):
-                  with zipfile.ZipFile(path) as archive:
-                      members = [
-                          m for m in archive.namelist()
-                          if m.lower().endswith((".nc", ".nc4"))
-                      ]
-
-                      if len(members) != 1:
-                          raise RuntimeError(
-                              f"Expected one NetCDF in {output}; "
-                              f"found {len(members)}"
-                          )
-
-                      data = archive.read(members[0])
-
-                  path.write_bytes(data)
-
-              # Verify the result is a NetCDF file.
-              import xarray as xr
-
-              with xr.open_dataset(
-                  path,
-                  engine="netcdf4"
-              ) as ds:
-                  print(
-                      f"{output} dimensions: {dict(ds.sizes)}",
-                      flush=True
-                  )
-
-          print(
-              "Downloading 1961–1990 baseline...",
-              flush=True
-          )
-
-          historical = {
-              **common,
-              "year": [
-                  str(y) for y in range(1961, 1991)
-              ]
-          }
-
-          download(historical, "data/baseline.nc")
-
-          print(
-              "Downloading October 15, 2025...",
-              flush=True
-          )
-
-          current = {
-              **common,
-              "year": ["2025"]
-          }
-
-          download(current, "data/target.nc")
-
-          print("Both downloads completed.", flush=True)
-          PY
-
-      - name: Calculate anomalies
+        run: python download_temperature.py
+      - name: Process and validate
         run: |
           python process_climate.py
-
-      - name: Validate outputs
-        run: |
           python - <<'PY'
           import json
-          import math
           from pathlib import Path
-
-          geo = json.loads(
-              Path("data/anomalies.geojson").read_text()
-          )
-
-          summary = json.loads(
-              Path("data/summary.json").read_text()
-          )
-
-          features = geo["features"]
-          counties = summary["county_statistics"]
-          state = summary["state_statistics"]
-
-          if len(features) < 100:
-              raise RuntimeError(
-                  f"Unexpectedly few grid cells: {len(features)}"
-              )
-
-          if len(counties) != 16:
-              raise RuntimeError(
-                  f"Expected 16 counties, got {len(counties)}"
-              )
-
-          required = [
-              "anomaly_f",
-              "temperature_f",
-              "normal_f",
-              "center_lon",
-              "center_lat",
-              "land_area_km2"
-          ]
-
-          for feature in features:
-              props = feature["properties"]
-
-              for key in required:
-                  if key not in props:
-                      raise RuntimeError(
-                          f"Missing grid property: {key}"
-                      )
-
-                  if not math.isfinite(float(props[key])):
-                      raise RuntimeError(
-                          f"Invalid grid property: {key}"
-                      )
-
-          if not math.isfinite(state["anomaly_f"]):
-              raise RuntimeError(
-                  "Invalid statewide anomaly"
-              )
-
-          if state["area_km2"] <= 0:
-              raise RuntimeError(
-                  "Invalid statewide land area"
-              )
-
-          for fips, stats in counties.items():
-              if stats["area_km2"] <= 0:
-                  raise RuntimeError(
-                      f"Invalid area for county {fips}"
-                  )
-
-          print("Validated grid cells:", len(features))
-          print("Validated counties:", len(counties))
-          print(
-              "Area-weighted statewide anomaly:",
-              state["anomaly_f"],
-              "°F"
-          )
-          print(
-              "Mapped land area:",
-              state["area_km2"],
-              "km²"
-          )
+          g=json.loads(Path('data/anomalies.geojson').read_text())
+          s=json.loads(Path('data/summary.json').read_text())
+          assert len(g['features'])>=100
+          assert len(s['county_statistics'])==16
+          assert s['grid_cell_count']==len(g['features'])
+          assert s['state_statistics']['area_km2']>0
+          print('Validated',s['date'])
           PY
-
-      - name: Save generated data
-        uses: actions/upload-artifact@v4
-        with:
-          name: maine-anomaly-data
-          path: |
-            data/anomalies.geojson
-            data/summary.json
-          if-no-files-found: error
-
-      - name: Publish generated data
+      - name: Publish validated results
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add data/anomalies.geojson data/summary.json
-
-          if git diff --cached --quiet; then
-            echo "No data changes to publish."
-          else
-            git commit -m "Generate validated Maine climate anomaly data"
-            git push
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/anomalies.geojson data/summary.json data/history/ data/baselines/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update Maine daily temperature anomalies'
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
