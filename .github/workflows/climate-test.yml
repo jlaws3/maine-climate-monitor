@@ -1,0 +1,84 @@
+
+name: Test Maine Climate Data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  climate-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Copernicus API
+        run: pip install cdsapi
+
+      - name: Download Maine temperature data
+        env:
+          CDSAPI_URL: https://cds.climate.copernicus.eu/api
+          CDSAPI_KEY: ${{ secrets.CDS_API_KEY }}
+        run: |
+          python - <<'PY'
+          import os
+          import cdsapi
+
+          if not os.environ.get("CDSAPI_KEY"):
+              raise RuntimeError("CDS_API_KEY secret is missing")
+
+          client = cdsapi.Client()
+
+          dataset = "derived-era5-land-daily-statistics"
+
+          request = {
+              "variable": ["2m_temperature"],
+              "year": "2025",
+              "month": "10",
+              "day": ["15"],
+              "daily_statistic": "daily_mean",
+              "time_zone": "utc+00:00",
+              "frequency": "1_hourly",
+              "area": [47.6, -71.2, 42.8, -66.8]
+          }
+
+          print("Requesting Maine ERA5-Land temperature data...")
+
+          client.retrieve(
+              dataset,
+              request,
+              "maine-temperature-test.zip"
+          )
+
+          print("Download completed.")
+          PY
+
+      - name: Verify downloaded file
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path("maine-temperature-test.zip")
+
+          if not p.exists():
+              raise RuntimeError("Climate data file not found")
+
+          print("File size:", p.stat().st_size, "bytes")
+          print("Climate data download verified.")
+          PY
+
+      - name: Save climate data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maine-temperature-test
+          path: maine-temperature-test.zip
+          if-no-files-found: error
