@@ -1,0 +1,139 @@
+
+name: Build Maine Temperature Anomalies
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-climate-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cdsapi xarray numpy netCDF4 shapely
+
+      - name: Download ERA5-Land datasets
+        env:
+          CDSAPI_URL: https://cds.climate.copernicus.eu/api
+          CDSAPI_KEY: ${{ secrets.CDS_API_KEY }}
+        run: |
+          python - <<'PY'
+          import cdsapi
+          from pathlib import Path
+
+          Path("data").mkdir(exist_ok=True)
+
+          client = cdsapi.Client()
+          dataset = "derived-era5-land-daily-statistics"
+
+          common = {
+              "variable": ["2m_temperature"],
+              "month": ["10"],
+              "day": ["15"],
+              "daily_statistic": "daily_mean",
+              "time_zone": "utc+00:00",
+              "frequency": "1_hourly",
+              "area": [47.6, -71.2, 42.8, -66.8]
+          }
+
+          print("Downloading 1961–1990 baseline...", flush=True)
+
+          historical = {
+              **common,
+              "year": [
+                  str(y) for y in range(1961, 1991)
+              ]
+          }
+
+          client.retrieve(
+              dataset,
+              historical,
+              "data/baseline.nc"
+          )
+
+          print("Downloading October 15, 2025...", flush=True)
+
+          current = {
+              **common,
+              "year": ["2025"]
+          }
+
+          client.retrieve(
+              dataset,
+              current,
+              "data/target.nc"
+          )
+
+          print("Both downloads completed.", flush=True)
+          PY
+
+      - name: Calculate anomalies
+        run: python process_climate.py
+
+      - name: Validate outputs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          geo = json.loads(
+              Path("data/anomalies.geojson").read_text()
+          )
+
+          summary = json.loads(
+              Path("data/summary.json").read_text()
+          )
+
+          count = len(geo["features"])
+          counties = len(summary["county_statistics"])
+
+          if count < 100:
+              raise RuntimeError(
+                  f"Unexpectedly few grid cells: {count}"
+              )
+
+          if counties != 16:
+              raise RuntimeError(
+                  f"Expected 16 county summaries, got {counties}"
+              )
+
+          print("Validated grid cells:", count)
+          print("Validated counties:", counties)
+          PY
+
+      - name: Save generated data
+        uses: actions/upload-artifact@v4
+        with:
+          name: maine-anomaly-data
+          path: |
+            data/anomalies.geojson
+            data/summary.json
+          if-no-files-found: error
+
+      - name: Publish generated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/anomalies.geojson data/summary.json
+
+          if git diff --cached --quiet; then
+            echo "No data changes to publish."
+          else
+            git commit -m "Generate Maine climate anomaly data"
+            git push
+          fi
