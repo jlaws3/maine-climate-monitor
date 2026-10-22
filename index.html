@@ -355,7 +355,7 @@ select {
 
         <div class="control">
           <label>
-            <input type="checkbox" id="show-basemap">
+            <input type="checkbox" id="show-basemap" checked>
             Show basemap
           </label>
         </div>
@@ -508,7 +508,8 @@ const legend = $('legend');
 
 const overlay = $('climate-overlay');
 const overlayContext = overlay.getContext('2d');
-
+// Shared opacity for temperature, drought, and future map data layers.
+const DATA_OVERLAY_OPACITY = 0.65;
 const bounds = [
   [-71.2,42.9],
   [-66.8,47.5]
@@ -540,9 +541,18 @@ let droughtGrid = null;
 let droughtSummary = null;
 let mode = "temperature";
 let currentDate = "";
-const latestDates={temperature:"",drought:""};
+
 const modeSelect = $("data-mode");
 const dateSelect = $("data-date");
+const showLayerLabel = showAnomalies.closest("label");
+function formatDisplayDate(isoDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate || "")) {
+    return isoDate || "Date unavailable";
+  }
+
+  const [year, month, day] = isoDate.split("-");
+  return `${month}/${day}/${year}`;
+}
 const droughtLegend = $("drought-legend");
 const temperatureLegendCaption = $("temperature-legend-caption");
 
@@ -949,6 +959,7 @@ function drawOverlay() {
 
   if (mode === "drought" && droughtGrid && showAnomalies.checked) {
     ctx.save();
+    ctx.globalAlpha = DATA_OVERLAY_OPACITY;
     ctx.beginPath();
     for (const feature of features) traceGeometry(ctx, feature.geometry);
     ctx.clip("evenodd");
@@ -964,6 +975,7 @@ function drawOverlay() {
 
   if (mode === "temperature" && showAnomalies.checked) {
     ctx.save();
+    ctx.globalAlpha = DATA_OVERLAY_OPACITY;
     ctx.beginPath();
 
     for (const feature of features) {
@@ -1120,7 +1132,7 @@ function displayStats(stats,statewide=false) {
     $("main-metric-label").textContent="Land in drought (D1–D4)";
     $("secondary-label-1").textContent="Abnormally dry (D0)";
     $("secondary-label-2").textContent="Severe or worse (D2–D4)";
-    $("metric-period").textContent="USDM week of " + currentDate;
+    $("metric-period").textContent="USDM week of " + formatDisplayDate(currentDate);
     anomalyValue.textContent=Number(stats.D1_plus).toFixed(1)+"%";
     anomalyValue.className="metric-value";
     temperatureValue.textContent=Number(stats.D0).toFixed(1)+"%";
@@ -1131,7 +1143,7 @@ function displayStats(stats,statewide=false) {
   $("main-metric-label").textContent="Temperature anomaly";
   $("secondary-label-1").textContent="Daily mean";
   $("secondary-label-2").textContent="Historical mean";
-  $("metric-period").textContent=currentDate+" vs. 1961–1990 calendar-day average";
+  $("metric-period").textContent=formatDisplayDate(currentDate)+" vs. 1961–1990 calendar-day average";
   if (!stats || stats.anomaly_f==null) {
     metrics.hidden=true;
     return;
@@ -1267,6 +1279,7 @@ function updateVisibility() {
     );
   }
 
+  showLayerLabel.lastChild.textContent = mode === "drought" ? " Show drought severity" : " Temperature anomalies";
   legend.style.display=showAnomalies.checked ? '' : 'none';
   $("drought-legend").style.display=mode === "drought" ? "block" : "none";
   $("temperature-legend-caption").style.display=mode === "temperature" ? "block" : "none";
@@ -1332,24 +1345,41 @@ async function initializeVersion2() {
   await updateDateOptions();
 }
 
+function updateDateLabels() {
+  const displayDate = currentDate ? formatDisplayDate(currentDate) : "Date unavailable";
+  $('source-note').textContent = mode === 'temperature'
+    ? 'Copernicus ERA5-Land, daily mean 2-meter air temperature; 1961–1990 baseline. Observation: ' + displayDate
+    : 'U.S. Drought Monitor, weekly GIS boundaries. Valid week: ' + displayDate + '. D0 is abnormally dry, not drought.';
+}
+
 async function updateDateOptions() {
-  const path=mode==='temperature'?'./data/history/index.json':'./data/drought-history/index.json';
-  let dates=[];
-  try { dates=await fetchJson(path); } catch(e) { console.warn('No history index yet',e); }
-  const latest=latestDates[mode];
-  if (latest) dates=[...new Set([latest,...dates])].sort().reverse();
+  const path = mode === 'temperature' ? './data/history/index.json' : './data/drought-history/index.json';
+  let dates = [];
+  try {
+    const result = await fetchJson(path);
+    if (Array.isArray(result)) dates = result.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  } catch (e) {
+    console.warn('No history index yet', e);
+  }
+  const loadedDate = mode === 'temperature' ? climateSummary?.date : droughtSummary?.date;
+  if (loadedDate) dates.push(loadedDate);
+  dates = [...new Set(dates)].sort().reverse();
   dateSelect.replaceChildren();
   for (const d of dates) {
-    const option=document.createElement('option');
-    option.value=d;option.textContent=d;
+    const option = document.createElement('option');
+    option.value = d;
+    option.textContent = formatDisplayDate(d);
     dateSelect.appendChild(option);
   }
-  currentDate=latest||'';
-  dateSelect.value=currentDate;
-  $('source-note').textContent=mode==='temperature'
-    ? 'Copernicus ERA5-Land, daily mean 2-meter air temperature; 1961–1990 baseline. Observation: '+currentDate
-    : 'U.S. Drought Monitor, weekly GIS boundaries. Valid week: '+currentDate+'. D0 is abnormally dry, not drought.';
-  updateVisibility();updateDetails();requestOverlayRender();
+  currentDate = loadedDate || dates[0] || '';
+  if (currentDate && !dates.includes(currentDate)) {
+    dateSelect.add(new Option(formatDisplayDate(currentDate), currentDate));
+  }
+  dateSelect.value = currentDate;
+  updateDateLabels();
+  updateVisibility();
+  updateDetails();
+  requestOverlayRender();
 }
 
 modeSelect.addEventListener('change',async()=>{
@@ -1361,6 +1391,7 @@ modeSelect.addEventListener('change',async()=>{
 dateSelect.addEventListener('change',async()=>{
   const chosen=dateSelect.value;
   const original=currentDate;
+  if (!chosen || chosen === original) return;
   try {
     if (mode==='temperature') {
       const base=chosen===climateSummary?.date ? './data/' : './data/history/'+chosen+'/';
@@ -1376,7 +1407,7 @@ dateSelect.addEventListener('change',async()=>{
       droughtGrid=g;droughtSummary=s;
     }
     currentDate=chosen;
-    $('source-note').textContent=(mode==='temperature'?'Copernicus ERA5-Land, daily mean temperature.':'U.S. Drought Monitor, weekly severity.')+' Observation: '+chosen;
+    updateDateLabels();
     updateDetails();requestOverlayRender();
     status.textContent='Showing '+chosen+' '+mode+' data.';
   } catch(e) {
