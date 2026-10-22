@@ -1,0 +1,200 @@
+{
+  "date": "2026-10-20",
+  "source": "U.S. Drought Monitor",
+  "source_url": "https://droughtmonitor.unl.edu/Data/shapefiles_r/USDM_Current.zip",
+  "units": "Percent of mapped land area",
+  "source_file_created": "2026-10-21",
+  "date_method": "Provisional reporting date inferred as the most recent Tuesday on or before the GIS creation date. Verify against the official USDM valid date before publication.",
+  "date_verified": false,
+  "processed_at": "2026-10-22T14:48:00.097987+00:00",
+  "state_statistics": {
+    "D0": 0.0,
+    "D1": 49.14,
+    "D2": 45.78,
+    "D3": 5.08,
+    "D4": 0.0,
+    "none": 0.0,
+    "D1_plus": 100.0,
+    "D0_plus": 100.0,
+    "area_km2": 85014.09
+  },
+  "county_statistics": {
+    "23009": {
+      "D0": 0.0,
+      "D1": 50.61,
+      "D2": 38.31,
+      "D3": 11.08,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 4643.87
+    },
+    "23029": {
+      "D0": 0.0,
+      "D1": 100.0,
+      "D2": 0.0,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 7296.44
+    },
+    "23007": {
+      "D0": 0.0,
+      "D1": 100.0,
+      "D2": 0.0,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 4584.44
+    },
+    "23015": {
+      "D0": 0.0,
+      "D1": 0.0,
+      "D2": 0.0,
+      "D3": 100.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 1314.07
+    },
+    "23021": {
+      "D0": 0.0,
+      "D1": 36.42,
+      "D2": 63.58,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 11335.02
+    },
+    "23023": {
+      "D0": 0.0,
+      "D1": 0.0,
+      "D2": 21.35,
+      "D3": 78.65,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 754.36
+    },
+    "23031": {
+      "D0": 0.0,
+      "D1": 66.01,
+      "D2": 33.99,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 2673.87
+    },
+    "23011": {
+      "D0": 0.0,
+      "D1": 15.47,
+      "D2": 76.42,
+      "D3": 8.11,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 2351.96
+    },
+    "23017": {
+      "D0": 0.0,
+      "D1": 97.81,
+      "D2": 2.19,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 5649.39
+    },
+    "23001": {
+      "D0": 0.0,
+      "D1": 33.79,
+      "D2": 66.21,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 1254.68
+    },
+    "23003": {
+      "D0": 0.0,
+      "D1": 15.08,
+      "D2": 84.92,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 17756.3
+    },
+    "23005": {
+      "D0": 0.0,
+      "D1": 9.04,
+      "D2": 74.89,
+      "D3": 16.07,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 2459.84
+    },
+    "23013": {
+      "D0": 0.0,
+      "D1": 0.0,
+      "D2": 4.46,
+      "D3": 95.54,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 1106.07
+    },
+    "23019": {
+      "D0": 0.0,
+      "D1": 52.53,
+      "D2": 47.46,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 9202.87
+    },
+    "23025": {
+      "D0": 0.0,
+      "D1": 71.39,
+      "D2": 28.61,
+      "D3": 0.0,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 10656.83
+    },
+    "23027": {
+      "D0": 0.0,
+      "D1": 0.0,
+      "D2": 87.2,
+      "D3": 12.8,
+      "D4": 0.0,
+      "none": 0.0,
+      "D1_plus": 100.0,
+      "D0_plus": 100.0,
+      "area_km2": 1974.09
+    }
+  },
+  "methodology_note": "Official USDM D0-D4 polygons are assigned to mutually exclusive highest-severity categories and clipped to Maine county boundaries. Coverage is calculated using geodesic land area. D0 is abnormally dry, not drought."
+}
