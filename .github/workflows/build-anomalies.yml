@@ -101,14 +101,15 @@ jobs:
 
           print('Archived temperature observation:', day)
           PYCODE
-
+   
       - name: Publish validated results
+        if: github.ref_name == 'v2-testing'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/anomalies.geojson data/summary.json data/history/ data/baselines/
           if ! git diff --cached --quiet; then
             git commit -m 'Update Maine daily temperature anomalies'
-            git pull --rebase origin main
-            git push origin HEAD:main
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
