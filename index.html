@@ -8,20 +8,19 @@
 <title>Maine Climate Monitor</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <link href="https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.css" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   background: #fff;
   color: #151515;
-  font-family: 'Barlow', Arial, sans-serif;
+  font-family: Barlow, Arial, sans-serif;
 }
+
+button, select, input { font: inherit; }
 
 .shell {
   max-width: 1320px;
@@ -46,6 +45,7 @@ h1 {
 .intro {
   color: #555;
   margin: 0 0 20px;
+  line-height: 1.5;
 }
 
 .layout {
@@ -56,15 +56,100 @@ h1 {
 
 .map-wrap {
   position: relative;
-  min-height: 620px;
+  min-height: 650px;
   border: 1px solid #ddd;
   border-radius: 12px;
   overflow: hidden;
+  background: #f5f6f5;
 }
 
 #map {
   position: absolute;
   inset: 0;
+}
+
+.map-controls {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-control {
+  background: rgba(255,255,255,.97);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 5px rgba(0,0,0,.07);
+}
+
+.map-control label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.map-control input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #1f3c71;
+}
+
+.legend {
+  position: absolute;
+  z-index: 2;
+  bottom: 16px;
+  left: 16px;
+  width: min(370px, calc(100% - 32px));
+  padding: 13px 15px;
+  background: rgba(255,255,255,.97);
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.legend-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.legend-bar {
+  height: 13px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    #214e9b 0%,
+    #4687c4 20%,
+    #a9d2e7 35%,
+    #f1f1ed 50%,
+    #f5bd88 65%,
+    #d66b51 80%,
+    #9d2839 100%
+  );
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #444;
+}
+
+.legend-caption {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.4;
 }
 
 .side {
@@ -74,14 +159,13 @@ h1 {
   align-self: start;
 }
 
-label {
+.field-label {
   font-weight: 600;
   display: block;
   margin-bottom: 8px;
 }
 
 select {
-  font: inherit;
   width: 100%;
   padding: 11px;
   border: 1px solid #aaa;
@@ -100,10 +184,55 @@ select {
   color: #555;
 }
 
+.metric {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: #555;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.metric-value.positive { color: #b64b37; }
+.metric-value.negative { color: #2867a3; }
+
+.metric-sub {
+  font-size: 12px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.small-metric {
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.small-metric .metric-label { font-size: 12px; }
+.small-metric .metric-value { font-size: 22px; }
+
 .status {
   font-size: 13px;
   color: #555;
   margin-top: 14px;
+  line-height: 1.45;
 }
 
 .note {
@@ -117,37 +246,25 @@ select {
   border: 1px solid #222;
   background: white;
   border-radius: 8px;
-  font: inherit;
   padding: 10px 14px;
   cursor: pointer;
   margin-top: 15px;
 }
 
-.reset:hover {
-  background: #f2f2f2;
-}
+.reset:hover { background: #f2f2f2; }
 
 .maplibregl-popup-content {
   font-family: Barlow, Arial, sans-serif;
   font-size: 14px;
+  line-height: 1.5;
 }
 
 @media (max-width: 760px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .map-wrap {
-    min-height: 520px;
-  }
-
-  .side {
-    order: -1;
-  }
-
-  .shell {
-    padding: 20px 12px;
-  }
+  .layout { grid-template-columns: 1fr; }
+  .map-wrap { min-height: 520px; }
+  .side { order: -1; }
+  .shell { padding: 20px 12px; }
+  .map-controls { top: 10px; left: 10px; }
 }
 </style>
 </head>
@@ -157,26 +274,72 @@ select {
 <main class="shell">
 
   <div class="eyebrow">
-    Maine Climate Monitor · Version 1.1
+    Maine Climate Monitor · Version 1.5
   </div>
 
-  <h1>Explore Maine's counties</h1>
+  <h1>Maine temperature anomalies</h1>
 
   <p class="intro">
-    Select a county on the map or from the menu.
-    Climate measurements will be added in the next stage.
+    Explore how daily mean temperatures on October 15, 2025
+    compared with the same calendar day during 1961–1990.
+    Select a county to examine local estimates.
   </p>
 
   <div class="layout">
 
     <section class="map-wrap"
-      aria-label="Interactive map of Maine counties">
+      aria-label="Interactive Maine temperature anomaly map">
+
       <div id="map"></div>
+
+      <div class="map-controls">
+
+        <div class="map-control">
+          <label for="show-anomalies">
+            <input type="checkbox" id="show-anomalies" checked>
+            Temperature anomalies
+          </label>
+        </div>
+
+        <div class="map-control">
+          <label for="show-grid">
+            <input type="checkbox" id="show-grid">
+            Show grid cells
+          </label>
+        </div>
+
+      </div>
+
+      <div class="legend" id="legend">
+
+        <div class="legend-title">
+          Temperature difference from historical average
+        </div>
+
+        <div class="legend-bar"></div>
+
+        <div class="legend-labels">
+          <span>−15°F</span>
+          <span>−7.5°F</span>
+          <span>0°F</span>
+          <span>+7.5°F</span>
+          <span>+15°F</span>
+        </div>
+
+        <div class="legend-caption">
+          Blue = cooler than average. Red = warmer than average.
+          The surface is visually smoothed from ERA5-Land grid values.
+        </div>
+
+      </div>
+
     </section>
 
     <aside class="side">
 
-      <label for="county">Select county</label>
+      <label class="field-label" for="county">
+        Select county
+      </label>
 
       <select id="county">
         <option value="">All Maine counties</option>
@@ -187,21 +350,57 @@ select {
       </h2>
 
       <p class="detail" id="detail">
-        Click any county to highlight it and zoom in.
+        Loading temperature data…
       </p>
+
+      <div id="metrics" hidden>
+
+        <div class="metric">
+
+          <div class="metric-label">
+            Temperature anomaly
+          </div>
+
+          <div class="metric-value" id="anomaly-value">
+            —
+          </div>
+
+          <div class="metric-sub">
+            October 15, 2025 vs. 1961–1990 average
+          </div>
+
+        </div>
+
+        <div class="metric-row">
+
+          <div class="small-metric">
+            <div class="metric-label">Daily mean</div>
+            <div class="metric-value" id="temperature-value">—</div>
+          </div>
+
+          <div class="small-metric">
+            <div class="metric-label">Historical mean</div>
+            <div class="metric-value" id="normal-value">—</div>
+          </div>
+
+        </div>
+
+        <p class="note" id="metric-note"></p>
+
+      </div>
 
       <button class="reset" id="reset" type="button">
         Reset map
       </button>
 
       <p class="status" id="status" role="status">
-        Loading county boundaries…
+        Loading climate data…
       </p>
 
       <p class="note">
-        <strong>Data status:</strong>
-        Geographic boundaries only. No temperature or
-        climate values are displayed yet.
+        <strong>Source:</strong> Copernicus ERA5-Land.
+        Daily mean 2-meter air temperature.
+        Historical baseline: 1961–1990.
       </p>
 
     </aside>
@@ -209,10 +408,16 @@ select {
   </div>
 
   <p class="note">
-    County geography: Plotly's public US counties GeoJSON
-    dataset (Maine FIPS 23). Basemap: OpenFreeMap.
-    For publication, we will replace this prototype
-    geography with authoritative Maine county boundaries.
+    <strong>Methodology:</strong>
+    October 15, 2025 temperature minus the average of
+    October 15 temperatures from 1961 through 1990.
+    The displayed color surface is visually smoothed;
+    no additional climate measurements are inferred.
+    County and statewide summaries use unweighted
+    grid-center values, not area-weighted means.
+    ERA5-Land is reanalysis data.
+    County geography: Plotly public US county GeoJSON.
+    Basemap: OpenFreeMap. Prototype visualization.
   </p>
 
 </main>
@@ -222,10 +427,20 @@ select {
 import * as maplibregl from
   'https://unpkg.com/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
 
-const countySelect = document.getElementById('county');
-const title = document.getElementById('county-title');
-const detail = document.getElementById('detail');
-const status = document.getElementById('status');
+const $ = id => document.getElementById(id);
+
+const countySelect = $('county');
+const title = $('county-title');
+const detail = $('detail');
+const status = $('status');
+const metrics = $('metrics');
+const anomalyValue = $('anomaly-value');
+const temperatureValue = $('temperature-value');
+const normalValue = $('normal-value');
+const metricNote = $('metric-note');
+const showAnomalies = $('show-anomalies');
+const showGrid = $('show-grid');
+const legend = $('legend');
 
 const bounds = [
   [-71.2, 42.9],
@@ -249,6 +464,197 @@ map.addControl(
 
 let features = [];
 let active = '';
+let climateSummary = null;
+let climateGrid = null;
+let climateReady = false;
+
+/* ------------------------------------
+   TEMPERATURE COLOR SCALE
+------------------------------------ */
+
+const stops = [
+  [-15, [33, 78, 155]],
+  [-9,  [70, 135, 196]],
+  [-4.5,[169, 210, 231]],
+  [0,   [241, 241, 237]],
+  [4.5, [245, 189, 136]],
+  [9,   [214, 107, 81]],
+  [15,  [157, 40, 57]]
+];
+
+function colorFor(value) {
+
+  if (value <= stops[0][0]) {
+    return `rgb(${stops[0][1].join(',')})`;
+  }
+
+  for (let i = 1; i < stops.length; i++) {
+
+    const [highValue, highColor] = stops[i];
+    const [lowValue, lowColor] = stops[i - 1];
+
+    if (value <= highValue) {
+
+      const t = (value - lowValue) /
+                (highValue - lowValue);
+
+      const rgb = lowColor.map((c, j) =>
+        Math.round(c + t * (highColor[j] - c))
+      );
+
+      return `rgb(${rgb.join(',')})`;
+    }
+  }
+
+  return `rgb(${stops[stops.length - 1][1].join(',')})`;
+}
+
+/* ------------------------------------
+   GEOGRAPHIC CANVAS HELPERS
+------------------------------------ */
+
+function geometryBounds(collection) {
+
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+
+  function walk(value) {
+
+    if (typeof value[0] === 'number') {
+      west = Math.min(west, value[0]);
+      east = Math.max(east, value[0]);
+      south = Math.min(south, value[1]);
+      north = Math.max(north, value[1]);
+      return;
+    }
+
+    value.forEach(walk);
+  }
+
+  collection.features.forEach(f =>
+    walk(f.geometry.coordinates)
+  );
+
+  return { west, south, east, north };
+}
+
+function drawGeometry(ctx, geometry, project) {
+
+  if (!geometry) return;
+
+  const polygons = geometry.type === 'Polygon'
+    ? [geometry.coordinates]
+    : geometry.type === 'MultiPolygon'
+      ? geometry.coordinates
+      : [];
+
+  ctx.beginPath();
+
+  for (const polygon of polygons) {
+    for (const ring of polygon) {
+
+      ring.forEach((point, index) => {
+        const [x, y] = project(point);
+
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+
+      ctx.closePath();
+    }
+  }
+}
+
+/* ------------------------------------
+   CREATE SMOOTH TEMPERATURE RASTER
+------------------------------------ */
+
+function makeSmoothSurface(grid, counties) {
+
+  const extent = geometryBounds(counties);
+
+  // A small margin prevents edge clipping
+  // during the blur operation.
+  const margin = 0.25;
+
+  const west = extent.west - margin;
+  const east = extent.east + margin;
+  const south = extent.south - margin;
+  const north = extent.north + margin;
+
+  const width = 1100;
+  const height = 1250;
+
+  const project = ([lon, lat]) => [
+    (lon - west) / (east - west) * width,
+    (north - lat) / (north - south) * height
+  ];
+
+  const original = document.createElement('canvas');
+  original.width = width;
+  original.height = height;
+
+  const ctx = original.getContext('2d');
+
+  // First draw each original ERA5-Land cell.
+  // This retains the real grid measurements.
+  for (const f of grid.features) {
+
+    const value = Number(f.properties.anomaly_f);
+
+    if (!Number.isFinite(value)) continue;
+
+    ctx.fillStyle = colorFor(value);
+
+    drawGeometry(ctx, f.geometry, project);
+    ctx.fill('evenodd');
+  }
+
+  // Create a separate smoothed surface.
+  // Blur radius is in image pixels, not
+  // degrees of geographic measurement.
+  const smooth = document.createElement('canvas');
+  smooth.width = width;
+  smooth.height = height;
+
+  const smoothCtx = smooth.getContext('2d');
+
+  smoothCtx.filter = 'blur(16px)';
+  smoothCtx.drawImage(original, 0, 0);
+  smoothCtx.filter = 'none';
+
+  // Clip the smoothed image back to Maine.
+  // The mask is applied after smoothing,
+  // keeping the geographic boundary sharp.
+  smoothCtx.globalCompositeOperation = 'destination-in';
+  smoothCtx.fillStyle = '#000';
+
+  for (const f of counties.features) {
+    drawGeometry(smoothCtx, f.geometry, project);
+    smoothCtx.fill('evenodd');
+  }
+
+  smoothCtx.globalCompositeOperation = 'source-over';
+
+  return {
+    url: smooth.toDataURL('image/png'),
+    coordinates: [
+      [west, north],
+      [east, north],
+      [east, south],
+      [west, south]
+    ]
+  };
+}
+
+/* ------------------------------------
+   COUNTY STATISTICS
+------------------------------------ */
 
 function featureName(f) {
   return f.properties.NAME ||
@@ -258,27 +664,131 @@ function featureName(f) {
          'County';
 }
 
-function selectCounty(id) {
+function formatTemp(value, signed = false) {
+
+  if (value === null ||
+      value === undefined ||
+      !Number.isFinite(Number(value))) {
+    return '—';
+  }
+
+  const n = Number(value);
+  const prefix = signed && n > 0 ? '+' : '';
+
+  return prefix + n.toFixed(1) + '°F';
+}
+
+function statewideStats() {
+
+  if (!climateGrid?.features?.length) return null;
+
+  const values = climateGrid.features
+    .map(f => f.properties)
+    .filter(p =>
+      Number.isFinite(p.anomaly_f) &&
+      Number.isFinite(p.temperature_f) &&
+      Number.isFinite(p.normal_f)
+    );
+
+  if (!values.length) return null;
+
+  const mean = key =>
+    values.reduce((sum, p) => sum + p[key], 0) /
+    values.length;
+
+  return {
+    anomaly_f: mean('anomaly_f'),
+    temperature_f: mean('temperature_f'),
+    normal_f: mean('normal_f'),
+    grid_points: values.length
+  };
+}
+
+function displayStats(stats, statewide = false) {
+
+  if (!stats || stats.anomaly_f == null) {
+    metrics.hidden = true;
+    return;
+  }
+
+  metrics.hidden = false;
+
+  anomalyValue.textContent =
+    formatTemp(stats.anomaly_f, true);
+
+  anomalyValue.className = 'metric-value';
+
+  if (stats.anomaly_f > 0) {
+    anomalyValue.classList.add('positive');
+  } else if (stats.anomaly_f < 0) {
+    anomalyValue.classList.add('negative');
+  }
+
+  temperatureValue.textContent =
+    formatTemp(stats.temperature_f);
+
+  normalValue.textContent =
+    formatTemp(stats.normal_f);
+
+  metricNote.textContent = statewide
+    ? 'Statewide estimate based on available grid centers; not area-weighted.'
+    : 'Based on ' + stats.grid_points +
+      ' grid-center values; not area-weighted.';
+}
+
+function updateDetails() {
+
+  if (!active) {
+
+    title.textContent = 'Maine';
+
+    detail.textContent = climateReady
+      ? 'Statewide overview of ERA5-Land grid-center temperatures.'
+      : 'Select a county to explore its temperature anomaly.';
+
+    displayStats(statewideStats(), true);
+    return;
+  }
+
+  const f = features.find(
+    x => x.properties.FIPS === active
+  );
+
+  if (!f) return;
+
+  title.textContent = featureName(f) + ' County';
+
+  detail.textContent =
+    'Daily mean temperature comparison for the selected county.';
+
+  const stats =
+    climateSummary?.county_statistics?.[active];
+
+  displayStats(stats || null);
+}
+
+function selectCounty(id, zoom = true) {
 
   active = id;
   countySelect.value = id;
 
-  map.setFilter('selected-county', [
-    '==',
-    ['get', 'FIPS'],
-    id
-  ]);
+  if (map.getLayer('selected-county')) {
+    map.setFilter('selected-county', [
+      '==',
+      ['get', 'FIPS'],
+      id
+    ]);
+  }
+
+  updateDetails();
+
+  if (!zoom) return;
 
   if (!id) {
-    title.textContent = 'Maine';
-    detail.textContent =
-      'Click any county to highlight it and zoom in.';
-
     map.fitBounds(bounds, {
       padding: 35,
       duration: 600
     });
-
     return;
   }
 
@@ -287,11 +797,6 @@ function selectCounty(id) {
   );
 
   if (!f) return;
-
-  title.textContent = featureName(f) + ' County';
-
-  detail.textContent =
-    'County selected. Temperature anomalies and historical comparisons will appear here in the next release.';
 
   const coords = [];
 
@@ -329,36 +834,82 @@ function selectCounty(id) {
   });
 }
 
+/* ------------------------------------
+   LAYER VISIBILITY
+------------------------------------ */
+
+function updateLayerVisibility() {
+
+  const enabled = showAnomalies.checked;
+
+  if (map.getLayer('smooth-anomalies')) {
+    map.setLayoutProperty(
+      'smooth-anomalies',
+      'visibility',
+      enabled ? 'visible' : 'none'
+    );
+  }
+
+  if (map.getLayer('anomaly-grid')) {
+    map.setLayoutProperty(
+      'anomaly-grid',
+      'visibility',
+      enabled && showGrid.checked
+        ? 'visible'
+        : 'none'
+    );
+  }
+
+  legend.style.display = enabled ? '' : 'none';
+}
+
 countySelect.addEventListener('change', () => {
   selectCounty(countySelect.value);
 });
 
-document.getElementById('reset')
-  .addEventListener('click', () => {
-    selectCounty('');
-  });
+$('reset').addEventListener('click', () => {
+  selectCounty('');
+});
+
+showAnomalies.addEventListener(
+  'change',
+  updateLayerVisibility
+);
+
+showGrid.addEventListener(
+  'change',
+  updateLayerVisibility
+);
+
+/* ------------------------------------
+   LOAD MAP AND CLIMATE DATA
+------------------------------------ */
 
 map.on('load', async () => {
 
   try {
 
-    const response = await fetch(
+    const countyResponse = await fetch(
       'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
     );
 
-    if (!response.ok) {
-      throw new Error('HTTP ' + response.status);
+    if (!countyResponse.ok) {
+      throw new Error(
+        'County HTTP ' + countyResponse.status
+      );
     }
 
-    const us = await response.json();
+    const us = await countyResponse.json();
 
     features = us.features
-      .filter(f => String(f.id || '').startsWith('23'))
+      .filter(f =>
+        String(f.id || '').padStart(5, '0').startsWith('23')
+      )
       .map(f => ({
         ...f,
         properties: {
           ...f.properties,
-          FIPS: String(f.id)
+          FIPS: String(f.id).padStart(5, '0')
         }
       }));
 
@@ -369,14 +920,14 @@ map.on('load', async () => {
       );
     }
 
-    const data = {
+    const countyData = {
       type: 'FeatureCollection',
       features
     };
 
     map.addSource('counties', {
       type: 'geojson',
-      data
+      data: countyData
     });
 
     map.addLayer({
@@ -385,32 +936,7 @@ map.on('load', async () => {
       source: 'counties',
       paint: {
         'fill-color': '#397d94',
-        'fill-opacity': 0.12
-      }
-    });
-
-    map.addLayer({
-      id: 'selected-county',
-      type: 'fill',
-      source: 'counties',
-      filter: [
-        '==',
-        ['get', 'FIPS'],
-        ''
-      ],
-      paint: {
-        'fill-color': '#1f3c71',
-        'fill-opacity': 0.35
-      }
-    });
-
-    map.addLayer({
-      id: 'county-lines',
-      type: 'line',
-      source: 'counties',
-      paint: {
-        'line-color': '#304a5a',
-        'line-width': 1.5
+        'fill-opacity': 0.04
       }
     });
 
@@ -428,17 +954,181 @@ map.on('load', async () => {
         countySelect.appendChild(option);
       });
 
-    map.on('click', 'county-fill', e => {
-      selectCounty(e.features[0].properties.FIPS);
+    const [gridResponse, summaryResponse] =
+      await Promise.all([
+        fetch('./data/anomalies.geojson'),
+        fetch('./data/summary.json')
+      ]);
+
+    if (!gridResponse.ok) {
+      throw new Error(
+        'Climate grid HTTP ' + gridResponse.status
+      );
+    }
+
+    if (!summaryResponse.ok) {
+      throw new Error(
+        'Climate summary HTTP ' + summaryResponse.status
+      );
+    }
+
+    climateGrid = await gridResponse.json();
+    climateSummary = await summaryResponse.json();
+
+    if (!climateGrid.features?.length) {
+      throw new Error('Climate grid is empty');
+    }
+
+    status.textContent =
+      'Generating smooth temperature surface…';
+
+    // Build the smooth image from actual
+    // grid measurements, then display it
+    // as a geographic MapLibre image source.
+    const surface = makeSmoothSurface(
+      climateGrid,
+      countyData
+    );
+
+    map.addSource('smooth-temperature', {
+      type: 'image',
+      url: surface.url,
+      coordinates: surface.coordinates
     });
 
-    map.on('mouseenter', 'county-fill', () => {
-      map.getCanvas().style.cursor = 'pointer';
+    map.addLayer({
+      id: 'smooth-anomalies',
+      type: 'raster',
+      source: 'smooth-temperature',
+      paint: {
+        'raster-opacity': 0.92,
+        'raster-fade-duration': 0
+      }
     });
 
-    map.on('mouseleave', 'county-fill', () => {
-      map.getCanvas().style.cursor = '';
+    // Keep the original grid boundaries
+    // available as a separate overlay.
+    map.addSource('anomalies', {
+      type: 'geojson',
+      data: climateGrid
     });
+
+    map.addLayer({
+      id: 'anomaly-grid',
+      type: 'line',
+      source: 'anomalies',
+      layout: {
+        visibility: 'none'
+      },
+      paint: {
+        'line-color': '#303030',
+        'line-opacity': 0.38,
+        'line-width': 0.6
+      }
+    });
+
+    map.addLayer({
+      id: 'selected-county',
+      type: 'fill',
+      source: 'counties',
+      filter: [
+        '==',
+        ['get', 'FIPS'],
+        ''
+      ],
+      paint: {
+        'fill-color': '#1f3c71',
+        'fill-opacity': 0.12
+      }
+    });
+
+    map.addLayer({
+      id: 'county-lines',
+      type: 'line',
+      source: 'counties',
+      paint: {
+        'line-color': '#455761',
+        'line-width': 1.1,
+        'line-opacity': 0.85
+      }
+    });
+
+    // The smooth raster is visual only.
+    // Popups read the original grid values.
+    map.on('click', e => {
+
+      const countyHits = map.queryRenderedFeatures(
+        e.point,
+        { layers: ['county-fill'] }
+      );
+
+      if (countyHits.length) {
+        selectCounty(countyHits[0].properties.FIPS);
+      }
+
+      if (!showAnomalies.checked) return;
+
+      const gridHits = map.queryRenderedFeatures(
+        e.point,
+        { layers: ['anomaly-grid'] }
+      );
+
+      // Grid lines are not suitable for
+      // selecting every interior cell.
+      // We'll use a separate invisible fill.
+    });
+
+    // Transparent interaction layer uses
+    // original unsmoothed measurements.
+    map.addLayer({
+      id: 'anomaly-hit',
+      type: 'fill',
+      source: 'anomalies',
+      paint: {
+        'fill-color': '#ffffff',
+        'fill-opacity': 0
+      }
+    }, 'county-lines');
+
+    map.on('click', 'anomaly-hit', e => {
+
+      if (!showAnomalies.checked) return;
+
+      const p = e.features[0].properties;
+
+      new maplibregl.Popup({
+        closeButton: true,
+        maxWidth: '240px'
+      })
+        .setLngLat(e.lngLat)
+        .setHTML(
+          '<strong>Temperature anomaly</strong>' +
+          '<div>' + formatTemp(p.anomaly_f, true) + '</div>' +
+          '<div>Daily mean: ' +
+          formatTemp(p.temperature_f) + '</div>' +
+          '<div>Historical mean: ' +
+          formatTemp(p.normal_f) + '</div>' +
+          '<div style="font-size:11px;color:#666;margin-top:5px;">' +
+          'Original ERA5-Land grid-cell value</div>'
+        )
+        .addTo(map);
+    });
+
+    map.on('mousemove', e => {
+
+      const hits = map.queryRenderedFeatures(
+        e.point,
+        { layers: ['county-fill'] }
+      );
+
+      map.getCanvas().style.cursor =
+        hits.length ? 'pointer' : '';
+    });
+
+    climateReady = true;
+
+    updateLayerVisibility();
+    updateDetails();
 
     map.fitBounds(bounds, {
       padding: 35,
@@ -446,14 +1136,17 @@ map.on('load', async () => {
     });
 
     status.textContent =
-      'Loaded all 16 Maine counties.';
+      'Loaded 16 counties and ' +
+      climateGrid.features.length +
+      ' temperature grid cells. Smooth surface active.';
 
   } catch (err) {
 
     status.textContent =
-      'Could not load county data: ' +
-      err.message +
-      '. Check your internet connection and reload.';
+      'Could not load map data: ' + err.message;
+
+    detail.textContent =
+      'The temperature dataset could not be displayed.';
 
     console.error(err);
   }
