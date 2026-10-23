@@ -80,8 +80,8 @@ jobs:
           if first < date(2010, 1, 1):
               raise ValueError("Start must be January 2010 or later")
 
-          if not os.environ.get("CDS_API_KEY"):
-              raise RuntimeError("CDS_API_KEY secret is missing")
+          if not os.environ.get("CDSAPI_KEY"):
+              raise RuntimeError("CDS_API_KEY environment variable is missing")
 
           downloader = repo / "download_temperature.py"
           processor = repo / "process_climate.py"
