@@ -1,0 +1,228 @@
+
+name: Backfill Historical Temperature
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_month:
+        description: "First month to process (YYYY-MM)"
+        required: true
+        default: "2010-01"
+      months:
+        description: "Number of months to process (maximum 6)"
+        required: true
+        default: "6"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temperature-backfill-v2
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    if: github.ref == 'refs/heads/v2-testing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out v2-testing
+        uses: actions/checkout@v4
+        with:
+          ref: v2-testing
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            cdsapi \
+            xarray \
+            netCDF4 \
+            numpy \
+            pandas \
+            shapely \
+            pyproj
+
+      - name: Process historical months in isolation
+        env:
+          CDS_API_KEY: ${{ secrets.CDS_API_KEY }}
+          START_MONTH: ${{ inputs.start_month }}
+          MONTHS: ${{ inputs.months }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import shutil
+          import subprocess
+          import sys
+          import tempfile
+          from datetime import date
+          from pathlib import Path
+
+          repo = Path.cwd()
+          history = repo / "data" / "history"
+          history.mkdir(parents=True, exist_ok=True)
+
+          start = os.environ["START_MONTH"]
+          count = int(os.environ["MONTHS"])
+
+          if count < 1 or count > 6:
+              raise ValueError("Months must be between 1 and 6")
+
+          first = date.fromisoformat(start + "-01")
+          if first < date(2010, 1, 1):
+              raise ValueError("Start must be January 2010 or later")
+
+          if not os.environ.get("CDS_API_KEY"):
+              raise RuntimeError("CDS_API_KEY secret is missing")
+
+          downloader = repo / "download_temperature.py"
+          processor = repo / "process_climate.py"
+
+          for script in (downloader, processor):
+              if not script.is_file():
+                  raise FileNotFoundError(
+                      f"Required script not found: {script.name}"
+                  )
+
+          completed = []
+          skipped = []
+
+          with tempfile.TemporaryDirectory() as temporary:
+              work = Path(temporary)
+              shutil.copy2(downloader, work / downloader.name)
+              shutil.copy2(processor, work / processor.name)
+
+              for offset in range(count):
+                  month_index = (
+                      first.year * 12 + first.month - 1 + offset
+                  )
+                  year = month_index // 12
+                  month = month_index % 12 + 1
+                  target = date(year, month, 15)
+
+                  if target > date.today():
+                      raise ValueError(
+                          f"Future observation requested: {target}"
+                      )
+
+                  stamp = target.isoformat()
+                  archive = history / stamp
+
+                  required = (
+                      archive / "summary.json",
+                      archive / "anomalies.geojson",
+                  )
+
+                  if all(path.is_file() for path in required):
+                      print(f"SKIP existing: {stamp}", flush=True)
+                      skipped.append(stamp)
+                      continue
+
+                  print(f"PROCESSING: {stamp}", flush=True)
+
+                  # Each observation is processed outside the repo.
+                  # Existing public/latest files cannot be overwritten.
+                  scratch = work / "data"
+                  if scratch.exists():
+                      shutil.rmtree(scratch)
+                  scratch.mkdir()
+
+                  env = os.environ.copy()
+                  env["TARGET_DATE"] = stamp
+
+                  subprocess.run(
+                      [sys.executable, downloader.name],
+                      cwd=work,
+                      env=env,
+                      check=True,
+                  )
+
+                  subprocess.run(
+                      [sys.executable, processor.name],
+                      cwd=work,
+                      env=env,
+                      check=True,
+                  )
+
+                  source = scratch / "history" / stamp
+
+                  summary_path = source / "summary.json"
+                  geojson_path = source / "anomalies.geojson"
+
+                  summary = json.loads(
+                      summary_path.read_text(encoding="utf-8")
+                  )
+                  geojson = json.loads(
+                      geojson_path.read_text(encoding="utf-8")
+                  )
+
+                  if summary.get("date") != stamp:
+                      raise RuntimeError(
+                          f"Summary date mismatch for {stamp}"
+                      )
+
+                  if len(summary.get("county_statistics", {})) != 16:
+                      raise RuntimeError(
+                          f"Incomplete county statistics: {stamp}"
+                      )
+
+                  if not geojson.get("features"):
+                      raise RuntimeError(
+                          f"Empty GeoJSON for {stamp}"
+                      )
+
+                  archive.mkdir(parents=True, exist_ok=True)
+
+                  shutil.copy2(
+                      summary_path, archive / "summary.json"
+                  )
+                  shutil.copy2(
+                      geojson_path, archive / "anomalies.geojson"
+                  )
+
+                  completed.append(stamp)
+                  print(f"ARCHIVED: {stamp}", flush=True)
+
+          # Rebuild the manifest from complete archives only.
+          dates = sorted(
+              (
+                  folder.name
+                  for folder in history.iterdir()
+                  if folder.is_dir()
+                  and (folder / "summary.json").is_file()
+                  and (folder / "anomalies.geojson").is_file()
+              ),
+              reverse=True,
+          )
+
+          (history / "index.json").write_text(
+              json.dumps(dates, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          print("New observations:", completed)
+          print("Existing observations:", skipped)
+          print("Total archived dates:", len(dates))
+          PY
+
+      - name: Commit historical files to v2-testing only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/history/
+
+          if git diff --cached --quiet; then
+            echo "No new historical data to commit."
+          else
+            git commit -m "Backfill monthly temperature observations"
+            git push origin HEAD:v2-testing
+          fi
