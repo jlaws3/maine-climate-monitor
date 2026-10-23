@@ -52,7 +52,7 @@ jobs:
 
       - name: Process historical months in isolation
         env:
-          CDS_API_KEY: ${{ secrets.CDS_API_KEY }}
+          CDSAPI_KEY: ${{ secrets.CDS_API_KEY }}
           START_MONTH: ${{ inputs.start_month }}
           MONTHS: ${{ inputs.months }}
         run: |
