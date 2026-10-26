@@ -1,128 +1,128 @@
 {
-  "date": "2026-10-19",
+  "date": "2026-10-20",
   "baseline": "1961-1990",
-  "baseline_method": "Mean of 10-19 daily temperatures for 1961-1990",
+  "baseline_method": "Mean of 10-20 daily temperatures for 1961-1990",
   "source": "Copernicus ERA5-Land daily statistics",
   "measurement": "Daily mean 2m temperature",
   "units": "Fahrenheit",
   "county_statistics": {
     "23009": {
-      "anomaly_f": -1.21,
-      "temperature_f": 46.94,
-      "normal_f": 48.15,
+      "anomaly_f": 1.71,
+      "temperature_f": 48.25,
+      "normal_f": 46.54,
       "grid_points": 65,
       "area_km2": 4199.52
     },
     "23029": {
-      "anomaly_f": -1.86,
-      "temperature_f": 45.91,
-      "normal_f": 47.77,
+      "anomaly_f": 1.59,
+      "temperature_f": 47.4,
+      "normal_f": 45.8,
       "grid_points": 102,
       "area_km2": 6977.14
     },
     "23007": {
-      "anomaly_f": -0.65,
-      "temperature_f": 42.45,
-      "normal_f": 43.1,
+      "anomaly_f": 2.63,
+      "temperature_f": 44.21,
+      "normal_f": 41.58,
       "grid_points": 78,
       "area_km2": 4584.11
     },
     "23015": {
-      "anomaly_f": -0.79,
-      "temperature_f": 48.49,
-      "normal_f": 49.29,
+      "anomaly_f": 1.66,
+      "temperature_f": 49.54,
+      "normal_f": 47.87,
       "grid_points": 23,
       "area_km2": 1220.14
     },
     "23021": {
-      "anomaly_f": -0.5,
-      "temperature_f": 43.55,
-      "normal_f": 44.05,
+      "anomaly_f": 3.53,
+      "temperature_f": 45.59,
+      "normal_f": 42.06,
       "grid_points": 164,
       "area_km2": 11332.16
     },
     "23023": {
-      "anomaly_f": -0.49,
-      "temperature_f": 48.78,
-      "normal_f": 49.28,
+      "anomaly_f": 1.88,
+      "temperature_f": 49.79,
+      "normal_f": 47.91,
       "grid_points": 16,
       "area_km2": 712.5
     },
     "23031": {
-      "anomaly_f": -1.63,
-      "temperature_f": 47.84,
-      "normal_f": 49.48,
+      "anomaly_f": 2.25,
+      "temperature_f": 50.44,
+      "normal_f": 48.19,
       "grid_points": 41,
       "area_km2": 2660.15
     },
     "23011": {
-      "anomaly_f": -1.7,
-      "temperature_f": 46.27,
-      "normal_f": 47.96,
+      "anomaly_f": 1.57,
+      "temperature_f": 47.98,
+      "normal_f": 46.41,
       "grid_points": 40,
       "area_km2": 2351.94
     },
     "23017": {
-      "anomaly_f": -1.05,
-      "temperature_f": 43.41,
-      "normal_f": 44.46,
+      "anomaly_f": 2.18,
+      "temperature_f": 45.33,
+      "normal_f": 43.16,
       "grid_points": 92,
       "area_km2": 5649.0
     },
     "23001": {
-      "anomaly_f": -1.43,
-      "temperature_f": 46.6,
-      "normal_f": 48.03,
+      "anomaly_f": 1.81,
+      "temperature_f": 48.37,
+      "normal_f": 46.56,
       "grid_points": 28,
       "area_km2": 1254.67
     },
     "23003": {
-      "anomaly_f": 0.78,
-      "temperature_f": 44.11,
-      "normal_f": 43.32,
+      "anomaly_f": 4.12,
+      "temperature_f": 45.04,
+      "normal_f": 40.92,
       "grid_points": 242,
       "area_km2": 17759.48
     },
     "23005": {
-      "anomaly_f": -1.02,
-      "temperature_f": 47.89,
-      "normal_f": 48.91,
+      "anomaly_f": 2.32,
+      "temperature_f": 49.88,
+      "normal_f": 47.56,
       "grid_points": 41,
       "area_km2": 2268.1
     },
     "23013": {
-      "anomaly_f": -0.71,
-      "temperature_f": 48.21,
-      "normal_f": 48.93,
+      "anomaly_f": 2.03,
+      "temperature_f": 49.59,
+      "normal_f": 47.56,
       "grid_points": 16,
       "area_km2": 807.52
     },
     "23019": {
-      "anomaly_f": -2.25,
-      "temperature_f": 44.16,
-      "normal_f": 46.41,
+      "anomaly_f": 2.35,
+      "temperature_f": 46.64,
+      "normal_f": 44.3,
       "grid_points": 144,
       "area_km2": 9201.86
     },
     "23025": {
-      "anomaly_f": -0.17,
-      "temperature_f": 43.46,
-      "normal_f": 43.63,
+      "anomaly_f": 3.14,
+      "temperature_f": 45.16,
+      "normal_f": 42.02,
       "grid_points": 162,
       "area_km2": 10656.4
     },
     "23027": {
-      "anomaly_f": -1.31,
-      "temperature_f": 46.6,
-      "normal_f": 47.91,
+      "anomaly_f": 1.88,
+      "temperature_f": 48.27,
+      "normal_f": 46.39,
       "grid_points": 34,
       "area_km2": 1763.27
     }
   },
   "state_statistics": {
-    "anomaly_f": -0.69,
-    "temperature_f": 44.63,
-    "normal_f": 45.32,
+    "anomaly_f": 2.83,
+    "temperature_f": 46.29,
+    "normal_f": 43.46,
     "grid_points": 1027,
     "area_km2": 83397.95
   },
