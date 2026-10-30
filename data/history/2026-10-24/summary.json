@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-24",
+  "baseline": "1961-1990",
+  "baseline_method": "Mean of 10-24 daily temperatures for 1961-1990",
+  "source": "Copernicus ERA5-Land daily statistics",
+  "measurement": "Daily mean 2m temperature",
+  "units": "Fahrenheit",
+  "county_statistics": {
+    "23009": {
+      "anomaly_f": -3.55,
+      "temperature_f": 42.19,
+      "normal_f": 45.74,
+      "grid_points": 65,
+      "area_km2": 4199.52
+    },
+    "23029": {
+      "anomaly_f": -3.81,
+      "temperature_f": 41.42,
+      "normal_f": 45.24,
+      "grid_points": 102,
+      "area_km2": 6977.14
+    },
+    "23007": {
+      "anomaly_f": -2.39,
+      "temperature_f": 37.93,
+      "normal_f": 40.32,
+      "grid_points": 78,
+      "area_km2": 4584.11
+    },
+    "23015": {
+      "anomaly_f": -2.51,
+      "temperature_f": 44.49,
+      "normal_f": 47.0,
+      "grid_points": 23,
+      "area_km2": 1220.14
+    },
+    "23021": {
+      "anomaly_f": -1.88,
+      "temperature_f": 39.32,
+      "normal_f": 41.2,
+      "grid_points": 164,
+      "area_km2": 11332.16
+    },
+    "23023": {
+      "anomaly_f": -2.24,
+      "temperature_f": 44.76,
+      "normal_f": 47.0,
+      "grid_points": 16,
+      "area_km2": 712.5
+    },
+    "23031": {
+      "anomaly_f": -1.82,
+      "temperature_f": 45.47,
+      "normal_f": 47.29,
+      "grid_points": 41,
+      "area_km2": 2660.15
+    },
+    "23011": {
+      "anomaly_f": -2.88,
+      "temperature_f": 42.47,
+      "normal_f": 45.35,
+      "grid_points": 40,
+      "area_km2": 2351.94
+    },
+    "23017": {
+      "anomaly_f": -2.73,
+      "temperature_f": 39.19,
+      "normal_f": 41.92,
+      "grid_points": 92,
+      "area_km2": 5649.0
+    },
+    "23001": {
+      "anomaly_f": -2.7,
+      "temperature_f": 42.78,
+      "normal_f": 45.49,
+      "grid_points": 28,
+      "area_km2": 1254.67
+    },
+    "23003": {
+      "anomaly_f": -2.76,
+      "temperature_f": 37.6,
+      "normal_f": 40.36,
+      "grid_points": 242,
+      "area_km2": 17759.48
+    },
+    "23005": {
+      "anomaly_f": -1.95,
+      "temperature_f": 44.67,
+      "normal_f": 46.62,
+      "grid_points": 41,
+      "area_km2": 2268.1
+    },
+    "23013": {
+      "anomaly_f": -2.24,
+      "temperature_f": 44.45,
+      "normal_f": 46.69,
+      "grid_points": 16,
+      "area_km2": 807.52
+    },
+    "23019": {
+      "anomaly_f": -3.17,
+      "temperature_f": 40.4,
+      "normal_f": 43.57,
+      "grid_points": 144,
+      "area_km2": 9201.86
+    },
+    "23025": {
+      "anomaly_f": -2.51,
+      "temperature_f": 38.32,
+      "normal_f": 40.83,
+      "grid_points": 162,
+      "area_km2": 10656.4
+    },
+    "23027": {
+      "anomaly_f": -3.11,
+      "temperature_f": 42.37,
+      "normal_f": 45.49,
+      "grid_points": 34,
+      "area_km2": 1763.27
+    }
+  },
+  "state_statistics": {
+    "anomaly_f": -2.7,
+    "temperature_f": 39.9,
+    "normal_f": 42.6,
+    "grid_points": 1027,
+    "area_km2": 83397.95
+  },
+  "grid_cell_count": 1027,
+  "weighting": "Geodesic land-area overlap of ERA5-Land grid cells with Maine county polygons",
+  "methodology_note": "Grid values are weighted by their land-area overlap with each county. Interpolation is for visualization only. ERA5-Land is reanalysis data."
+}
